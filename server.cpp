@@ -36,10 +36,6 @@ public:
             remove();
         }
     }
-    void giveName(){
-        char buf[] = "";
-        write(buf,strlen(buf));
-    }
 
     void write(char * buffer, int count){
         if(count != ::write(_fd, buffer, count))
