@@ -26,9 +26,13 @@ public:
     virtual void handleEvent(uint32_t events) override {
         if(events & EPOLLIN) {
             char buffer[256];
+            char buffd[10];
+            sprintf(buffd,"%d: ", _fd);
             ssize_t count = read(_fd, buffer, 256);
-            if(count > 0)
+            if(count > 0){
+                sendToAllBut(_fd, buffd, strlen(buffd));
                 sendToAllBut(_fd, buffer, count);
+            }
             else
                 events |= EPOLLERR;
         }
