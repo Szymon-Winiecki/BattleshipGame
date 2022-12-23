@@ -23,6 +23,7 @@ void Player::setGame(Game* game){
 }
 
 bool Player::vote(std::string votingId, std::string vote){
-    Vote vote = Vote(this->getId(), game->getId(), votingId, vote);
+    //Vote v = Vote(this->getId(), game->getId(), votingId, vote);
     //todo
+    return false;
 }

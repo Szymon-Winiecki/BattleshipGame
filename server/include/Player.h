@@ -7,6 +7,8 @@
 #include "./Game.h"
 #include "./Vote.h"
 
+class Game;
+
 class Player{
 private:
     static long nextId;

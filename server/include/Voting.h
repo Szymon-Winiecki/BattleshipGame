@@ -8,6 +8,8 @@
 #include "./Vote.h"
 #include "./Player.h"
 
+class Player;
+
 class Voting{
 private:
     static long nextId;

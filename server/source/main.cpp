@@ -1,4 +1,4 @@
-#include <iostream>
+/*#include <iostream>
 #include <list>
 
 #include "../include/Message.h"
@@ -16,7 +16,7 @@ void printPlayersList(std::list<Player>* players){
 }
 
 int main(){
-    /*Message m1 = Message(MessageType::INFO, "game1", "player1", "Hello world");
+    Message m1 = Message(MessageType::INFO, "game1", "player1", "Hello world");
 
     Message m2 = Message::decode("1|game2|player2|Hej");
 
@@ -28,7 +28,7 @@ int main(){
 
     std::cout << m1.encode() << std::endl;
     std::cout << m2.encode() << std::endl;
-    std::cout << v1.getVotingId() << std::endl;*/
+    std::cout << v1.getVotingId() << std::endl;
 
     Client client = Client();
 
@@ -42,4 +42,5 @@ int main(){
     printPlayersList(game.getTeam(0));
     printPlayersList(game.getTeam(1));
 
-}
+    return 0;
+}*/

@@ -10,6 +10,9 @@
 #include "./Client.h"
 #include "./Voting.h"
 
+class Player;
+class Voting;
+
 class Game{
 private:
     static int nextId;
@@ -19,7 +22,7 @@ private:
     std::string gameId;
     std::list<Player> teams[2];
     long startTime;
-    std::unordered_map<std::string, Voting> activeVotings;
+    std::unordered_map<std::string, Voting*> activeVotings;
 
     void assertTeam(int team);
 public:
@@ -29,5 +32,5 @@ public:
     Player* join(Client client, int team);
     std::string getId();
     std::list<Player>* getTeam(int team);
-    //Voting* getVoting(std::string votingId);
+    Voting* getVoting(std::string votingId);
 };

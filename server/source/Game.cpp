@@ -44,9 +44,9 @@ void Game::assertTeam(int team){
     }
 }
 
-/*Voting* Game::getVoting(std::string votingId){
+Voting* Game::getVoting(std::string votingId){
     if(activeVotings.find(votingId) == activeVotings.end()){
         return NULL;
     }
-    return &activeVotings[votingId];
-}*/
+    return activeVotings[votingId];
+}
