@@ -35,7 +35,7 @@ int main(int argc, char ** argv){
     ev.data.fd = 0;
     epoll_ctl(fd,EPOLL_CTL_ADD,0,&ev);
 
-
+    printf("Akcje:\n1 - stworz gre\n2 <id_gry>- dolacz do gry\n");
     while(1){
         int ew = epoll_wait(fd,&ev,1,-1);
 

@@ -10,6 +10,7 @@
 #include "./Client.h"
 #include "./Voting.h"
 
+
 class Player;
 class Voting;
 
@@ -29,7 +30,7 @@ public:
     Game();
     void open();
     void start();
-    Player* join(Client client, int team);
+    Player* join(int team);
     std::string getId();
     std::list<Player>* getTeam(int team);
     Voting* getVoting(std::string votingId);

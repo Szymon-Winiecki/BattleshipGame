@@ -36,3 +36,16 @@ std::string Message::encode(char separator){
     encoded << this->type << separator << this->gameId << separator << this->playerId << separator << this->content;
     return encoded.str();
 }
+
+MessageType Message::getType(){
+    return this->type;
+}
+std::string Message::getGameId(){
+    return this->gameId;
+}
+std::string Message::getPlayerId(){
+    return this->playerId;
+}
+std::string Message::getContent(){
+    return this->content;
+}

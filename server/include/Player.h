@@ -10,18 +10,19 @@
 class Game;
 
 class Player{
-private:
-    static long nextId;
-    static std::string generateId();
+    private:
+        static long nextId;
+        static std::string generateId();
 
-    Client* client;
-    std::string playerId;
-    Game* game;
-public:
-    Player();
-    std::string getId();
-    void setClient(Client* client);
-    void setGame(Game* game);
+        Client* client;
+        std::string playerId;
+        Game* game;
+    public:
+        Player();
+        std::string getId();
+        void setClient(Client* client);
+        void setGame(Game* game);
 
-    bool vote(std::string votingId, std::string vote);
+        Game* getGame();
+        bool vote(std::string votingId, std::string vote);
 };

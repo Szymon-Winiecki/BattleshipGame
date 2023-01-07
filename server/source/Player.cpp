@@ -1,5 +1,6 @@
 #include "../include/Player.h"
 
+
 long Player::nextId = 1;
 
 std::string Player::generateId(){
@@ -9,6 +10,7 @@ std::string Player::generateId(){
 }
 
 Player::Player() : playerId{ generateId() } {};
+
 
 std::string Player::getId(){
     return playerId;
@@ -20,6 +22,10 @@ void Player::setClient(Client* client){
 
 void Player::setGame(Game* game){
     this->game = game;
+}
+
+Game* Player::getGame(){
+    return this->game;
 }
 
 bool Player::vote(std::string votingId, std::string vote){

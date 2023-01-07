@@ -1,61 +1,13 @@
-#include "server.h"
+#include "../include/server.h"
 
+int servFd;
+int epollFd;
 
-class Client : public Handler {
-    int _fd;
-    char id[20];
-public:
-    Client(int fd) : _fd(fd) {
-        epoll_event ee {EPOLLIN|EPOLLRDHUP, {.ptr=this}};
-        epoll_ctl(epollFd, EPOLL_CTL_ADD, _fd, &ee);
+std::unordered_set<Client*> clients;
 
-        char buf[256];
-        sprintf(buf,"Witamy na serwerze!\nTwoje unikalne id to: %d\n",_fd);
-        write(buf,strlen(buf));
+std::list<Game*> games;
 
-        char buf1[256]; 
-        sprintf(buf1,"Gracz %d dolaczyl do gry\n",_fd);
-        sendToAllBut(_fd, buf1, strlen(buf1));
-    }
-    virtual ~Client(){
-        epoll_ctl(epollFd, EPOLL_CTL_DEL, _fd, nullptr);
-        shutdown(_fd, SHUT_RDWR);
-        close(_fd);
-    }
-    int fd() const {return _fd;}
-    virtual void handleEvent(uint32_t events) override {
-        if(events & EPOLLIN) {
-            char buffer[256];
-            char buffd[10];
-            sprintf(buffd,"%d: ", _fd);
-            ssize_t count = read(_fd, buffer, 256);
-            if(count > 0){
-                sendToAllBut(_fd, buffd, strlen(buffd));
-                sendToAllBut(_fd, buffer, count);
-            }
-            else
-                events |= EPOLLERR;
-        }
-        if(events & ~EPOLLIN){
-            remove();
-        }
-    }
-
-    void write(char * buffer, int count){
-        if(count != ::write(_fd, buffer, count))
-            remove();
-        
-    }
-    void remove() {
-        printf("removing %d\n", _fd);
-        char buf[255];
-        sprintf(buf,"Gracz %d opuscil gre.\n",_fd);
-        sendToAllBut(_fd,buf,strlen(buf));
-        clients.erase(this);
-        delete this;
-    }
-
-};
+/*HANDLER DO OBSLUGI NOWEGO POLACZENIA*/
 
 class : Handler {
     public:
@@ -81,7 +33,155 @@ class : Handler {
 } servHandler;
 
 
-int main(int argc, char ** argv){
+/*FUNKCJE KLASY KLIENTA NA SERWERZE (POZNIEJ PEWNIE PRZENIESIONE CO CLIENT.CPP)*/
+Client::Client(int fd) : _fd(fd) {
+        epoll_event ee {EPOLLIN|EPOLLRDHUP, {.ptr=this}};
+        epoll_ctl(epollFd, EPOLL_CTL_ADD, _fd, &ee);
+
+        char buf[256];
+        sprintf(buf,"Witamy na serwerze!\nTwoje unikalne id to: %d\n",_fd);
+        write(buf,strlen(buf));
+
+        char buf1[256]; 
+        sprintf(buf1,"Gracz %d dolaczyl do gry\n",_fd);
+        sendToAllBut(_fd, buf1, strlen(buf1));
+    }
+
+Client::~Client(){
+    epoll_ctl(epollFd, EPOLL_CTL_DEL, _fd, nullptr);
+    shutdown(_fd, SHUT_RDWR);
+    close(_fd);
+}
+
+int Client::fd() {
+    return _fd;
+}
+
+Player* Client::getPlayer(){
+    return this->player;
+}
+
+void Client::handleEvent(uint32_t events){
+    if(events & EPOLLIN) {
+        char buffer[256]{};
+        char buffd[10]{};
+        sprintf(buffd,"%d: ", _fd);
+        ssize_t count = read(_fd, buffer, 256);
+        if(count > 0){
+            if(buffer[0]=='1'){
+                this->createGame();
+            }
+            else if(buffer[0]=='2'){
+                std::string s(buffer);
+                s=s.substr(2,s.size()-2-1);
+                this->joinGame(s);
+            }
+            else{
+                sendToAllBut(_fd, buffd, strlen(buffd));
+                sendToAllBut(_fd, buffer, count);
+            }
+        }
+        else
+            events |= EPOLLERR;
+    }
+    if(events & ~EPOLLIN){
+        remove();
+    }
+}
+
+void Client::write(char * buffer, int count){
+    if(count != ::write(_fd, buffer, count))
+        remove();
+    
+}
+
+void Client::remove() {
+    printf("removing %d\n", _fd);
+    char buf[255];
+    sprintf(buf,"Gracz %d opuscil gre.\n",_fd);
+    sendToAllBut(_fd,buf,strlen(buf));
+    clients.erase(this);
+    delete this;
+}
+
+
+
+
+void Client::setPlayer(Player* player){
+    this->player=player;
+}
+
+
+
+void Client::createGame(){ //todo: bledy np podczas gdy gracz jest w grze nie moze dolaczyc do innej ani stworzyc 
+    if(this->getPlayer() != NULL){
+        char buf[256] = "Wyjdz z biezacej gry aby stworzyc nowa.\n";
+        write(buf,strlen(buf));
+        return;
+    }
+    Game* newGame = new Game();
+    games.push_back(newGame);
+    Player *player = newGame->join(0);
+    player->setClient(this);
+    player->setGame(newGame);
+    this->setPlayer(player);
+    char buf[256];
+    sprintf(buf,"Stworzono gre o id: %s\nTwoje id gracza: %s\n",this->getPlayer()->getGame()->getId().c_str(), this->getPlayer()->getId().c_str());
+    write(buf,strlen(buf));
+}
+
+void Client::joinGame(std::string id){
+    if(this->getPlayer() != NULL){
+        char buf[256] = "Wyjdz z biezacej gry aby dolaczyc do innej.\n";
+        write(buf,strlen(buf));
+        return;
+    }
+    for (auto const i : games) {
+        if(i->getId() == id){
+            Player *player = i->join(0);
+            if(player==NULL){
+                char buf[] = "Nie udalo sie dolaczyc do gry, lobby jest pelne.\n";
+                write(buf,strlen(buf));
+                return;
+            }
+            player->setClient(this);
+            player->setGame(i);
+            this->setPlayer(player);
+            char buf[256];
+            sprintf(buf,"Dolaczono do gry o id: %s\nTwoje id gracza: %s\n",this->getPlayer()->getGame()->getId().c_str(), this->getPlayer()->getId().c_str());
+            write(buf,strlen(buf));
+            showPlayers();
+            return;
+        }
+    }
+    char buf[] {"Gra o podanym id nie istnieje\n"};
+    write(buf,strlen(buf));
+}
+
+
+
+void Client::showPlayers(){
+    char buf[] {"Druzyna nr 0:\n"};
+    write(buf,strlen(buf));
+    for (auto i: *this->getPlayer()->getGame()->getTeam(0)) {
+        char buf[255] {};
+        sprintf(buf,"%s\n",i.getId().c_str());
+        this->write(buf,strlen(buf));
+    }
+    char buf1[] = "Druzyna nr 1:\n";
+    write(buf1,strlen(buf1));
+    for (auto i: *this->getPlayer()->getGame()->getTeam(1)) {
+        char buf[255] {};
+        sprintf(buf,"%s\n",i.getId().c_str());
+        this->write(buf,strlen(buf));
+    }
+}
+
+
+
+
+/*FUNKCJA GLOWNA SERWERA*/
+void run(int argc, char ** argv){
     if(argc != 2) error(1, 0, "Need 1 arg (port)");
     auto port = readPort(argv[1]);
     
@@ -114,6 +214,7 @@ int main(int argc, char ** argv){
     }
 }
 
+/*ROZNE DODATKOWE FUNKCJE*/
 uint16_t readPort(char * txt){
     char * ptr;
     auto port = strtol(txt, &ptr, 10);

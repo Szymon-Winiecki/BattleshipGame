@@ -12,6 +12,7 @@
 #include <poll.h> 
 #include <thread>
 #include <iostream>
+#include "../server/include/Message.h"
 
 ssize_t readData(int fd, char * buffer, ssize_t buffsize);
 

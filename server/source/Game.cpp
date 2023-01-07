@@ -9,7 +9,7 @@ std::string Game::generateId(){
 
 Game::Game() :
     gameId{ generateId() },
-    maxPlayers{ 10 } { }
+    maxPlayers{ 2 } { }
 
 void Game::open(){
 
@@ -19,7 +19,7 @@ void Game::start(){
 
 }
 
-Player* Game::join(Client client, int team){
+Player* Game::join(int team){
     if(teams[0].size() + teams[1].size() >= maxPlayers){
         return NULL;
     }

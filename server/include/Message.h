@@ -29,4 +29,9 @@ public:
 
     std::string encode();
     std::string encode(char separator);
+
+    MessageType getType();
+    std::string getGameId();
+    std::string getPlayerId();
+    std::string getContent();
 };
