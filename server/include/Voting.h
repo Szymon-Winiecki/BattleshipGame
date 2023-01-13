@@ -4,6 +4,8 @@
 #include <list>
 #include <chrono>
 #include <sstream>
+#include <unordered_map>
+#include <unordered_set>
 
 #include "./Vote.h"
 #include "./Player.h"
@@ -18,7 +20,8 @@ private:
     std::string votingId;
     std::string gameId;
     std::list<Player>* allowedPlayers;
-    //add list of votes
+    std::unordered_set<std::string> playersThatVoted;
+    std::unordered_map<std::string, int> votes;
 
     long startTime;
     long duration;
@@ -27,10 +30,14 @@ private:
     bool validateGame(std::string gameId);
     bool validateTime(long time);
     bool validatePlayer(std::string playerId);
+    bool validateIfVotedOnce(std::string playerId);
+    bool validate(Vote& vote);
 
 public:
     Voting(std::string gameId, std::list<Player>* allowedPlayers, long duration);
     Voting(std::string gameId, std::list<Player>* allowedPlayers, long startTime, long duration);
     std::string getVotingId();
-    bool validate(Vote& vote);
+    bool vote(Vote& vote);
+    std::string getResult();
+    std::string getRanking();
 };

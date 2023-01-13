@@ -2,17 +2,23 @@
 
 Message::Message() : Message(MessageType::UNKNOWN, "", "", ""){};
 
-Message::Message(MessageType type, std::string gameId, std::string playerId, std::string content) :
+Message::Message(MessageType type, std::string gameId, std::string param1, std::string param2) :
     type{ type },
-    gameId{ gameId },
-    playerId{ playerId },
-    content{ content } { }
+    objectId{ gameId },
+    param1{ param1 },
+    param2{ param2 } { }
 
-Message::Message(MessageType type, std::string content) :
+Message::Message(MessageType type, std::string param1) :
     type{ type },
-    gameId{""},
-    playerId{""},
-    content{ content } { }
+    objectId{ "" },
+    param1{ param1 },
+    param2{ "" } { }
+
+Message::Message(MessageType type) :
+    type{ type },
+    objectId{ "" },
+    param1{ "" },
+    param2{ "" } { }
 
 Message Message::decode(std::string message){
     return Message::decode(message, '|');
@@ -26,9 +32,9 @@ Message Message::decode(std::string message, char separator){
     std::getline(encoded, typestr, separator);
     decoded.type = (MessageType) atoi(typestr.c_str());
 
-    std::getline(encoded, decoded.gameId, separator);
-    std::getline(encoded, decoded.playerId, separator);
-    std::getline(encoded, decoded.content);
+    std::getline(encoded, decoded.objectId, separator);
+    std::getline(encoded, decoded.param1, separator);
+    std::getline(encoded, decoded.param2);
     
     return decoded;
 }
@@ -39,21 +45,21 @@ std::string Message::encode(){
 
 std::string Message::encode(char separator){
     std::stringstream encoded;
-    encoded << this->type << separator << this->gameId << separator << this->playerId << separator << this->content;
+    encoded << this->type << separator << this->objectId << separator << this->param1 << separator << this->param2;
     return encoded.str();
 }
 
 MessageType Message::getType(){
     return this->type;
 }
-std::string Message::getGameId(){
-    return this->gameId;
+std::string Message::getObjectId(){
+    return this->objectId;
 }
-std::string Message::getPlayerId(){
-    return this->playerId;
+std::string Message::getParam1(){
+    return this->param1;
 }
-std::string Message::getContent(){
-    return this->content;
+std::string Message::getParam2(){
+    return this->param2;
 }
 
 int Message::getLength(){

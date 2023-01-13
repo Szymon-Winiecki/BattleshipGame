@@ -67,28 +67,44 @@ void Client::handleEvent(uint32_t events){
         ssize_t count = read(_fd, buffer, 256);
         if(count > 0){ //TESTY
             std::string s {buffer};
-            Message message;
-            message = message.decode(s); 
-                switch(message.getType()){ 
+            Message message = Message::decode(s);
+            switch(message.getType()){ 
                 case CREATE:
                     this->createGame();
                 break;
                 case JOIN:
-                    std::cout<<message.getGameId()<<std::endl;
-                    this->joinGame(message.getGameId());
+                    std::cout<<message.getObjectId()<<std::endl;
+                    this->joinGame(message.getObjectId());
                 break;
                 case LEAVE:
                     this->leaveGame();
                 break;
                 case CHANGETEAM:
-                    if(this->getPlayer()->getTeamId() == atoi(message.getContent().c_str())){
+                    if(this->getPlayer()->getTeamId() == atoi(message.getParam1().c_str())){
                         Message* message = new Message(MessageType::ERROR,"Juz jestes w tej druzynie\n");
                         this->writem(message);
                         break;
                     }
-                    this->getPlayer()->getGame()->changeTeam(atoi(message.getContent().c_str()),this->getPlayer());
+                    this->getPlayer()->getGame()->changeTeam(atoi(message.getParam1().c_str()),this->getPlayer());
                     this->showPlayers();
                 break;
+                case GETMAP:{
+                    int team = atoi(message.getParam1().c_str());
+                    if(getPlayer() == NULL || getPlayer()->getGame() == NULL){
+                        Message* message = new Message(MessageType::ERROR,"Aby pobrac mape musisz byc w grze\n");
+                        this->writem(message);
+                        break;
+                    }
+                    if(team < 0 || team > 1){
+                        Message* message = new Message(MessageType::ERROR,"Sa tylko dwie druzyny: 0 i 1\n");
+                        this->writem(message);
+                        break;
+                    }
+                    bool showShips = false;
+                    if(getPlayer()->getTeamId() == team) showShips = true;
+                    Message* message = new Message(MessageType::GETMAP, getPlayer()->getGame()->getSerializedMap(team, showShips));
+                    this->writem(message);
+                break;}
                 default:
                     events |= EPOLLERR;
                 break;
@@ -100,19 +116,17 @@ void Client::handleEvent(uint32_t events){
     }
 }
 
-
-
-
 void Client::write(char * buffer, int count){
-    if(count != ::write(_fd, buffer, count))
+    if(count != ::write(_fd, buffer, count)){
         remove();
-    
+    }
 }
 
 void Client::writem(Message* message){
     int count = message->getLength();
-    if(count != ::write(_fd, message->encode().c_str(), count))
-        remove();  
+    if(count != ::write(_fd, message->encode().c_str(), count)){
+        remove();
+    }  
 }
 
 void Client::readm(uint32_t events){
@@ -208,7 +222,7 @@ void Client::showPlayers(){ //do poprawy
     std::cout<<"Team 0:"<<std::endl;
     for (auto i: *this->getPlayer()->getGame()->getTeam(0)) {
         //s1+=i->getId()+"\n";
-        std::cout<<i->getId()<<std::endl;
+        std::cout<<i.getId()<<std::endl;
     }
     Message* message1 = new Message(MessageType::SHOWTEAMS,this->getPlayer()->getGame()->getId(),"0",s1); //nr druzyny jako playerid
     //this->writem(message1);
@@ -217,7 +231,7 @@ void Client::showPlayers(){ //do poprawy
     std::cout<<"Team 1:"<<std::endl;
     for (auto i: *this->getPlayer()->getGame()->getTeam(1)) {
         //s2+=i->getId()+"\n";
-        std::cout<<i->getId()<<std::endl;
+        std::cout<<i.getId()<<std::endl;
     }
     Message* message2 = new Message(MessageType::SHOWTEAMS,this->getPlayer()->getGame()->getId(),"1",s2);
     //this->writem(message2);

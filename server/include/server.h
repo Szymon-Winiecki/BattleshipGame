@@ -20,6 +20,9 @@
 #include "./Handler.h"
 #include "./Client.h"
 
+#include "./Message.h"
+#include <iostream>
+
 void ctrl_c(int);
 
 void sendToAllBut(int fd, char * buffer, int count);

@@ -23,6 +23,8 @@ class Client : Handler{
         void remove();
         void handleEvent(uint32_t events);
         void readm(uint32_t events);
+
+        void handleMessage(Message &message);
         
         void createGame();
         void joinGame(std::string id);

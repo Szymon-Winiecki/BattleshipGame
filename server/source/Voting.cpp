@@ -43,6 +43,15 @@ bool Voting::validatePlayer(std::string playerId){
     return false;
 }
 
+bool Voting::validateIfVotedOnce(std::string playerId){
+    if(playersThatVoted.find(playerId) == playersThatVoted.end()){
+        return true;
+    }
+    else{
+        return false;
+    }
+}
+
 std::string Voting::getVotingId(){
     return votingId;
 }
@@ -52,5 +61,40 @@ bool Voting::validate(Vote& vote){
     if(!this->validateGame(vote.getGameId())) return false;
     if(!this->validateTime(vote.getTime())) return false;
     if(!this->validatePlayer(vote.getPlayerId())) return false;
+    if(!validateIfVotedOnce(vote.getPlayerId())) return false;
     return true;
+}
+
+bool Voting::vote(Vote& vote){
+
+    if(!validate(vote)) return false;
+
+    if(votes.find(vote.getVote()) == votes.end()){
+        votes.insert({vote.getVote(), 1});
+    }
+    else{
+        ++votes[vote.getVote()];
+    }
+    return true;
+}
+
+std::string Voting::getRanking(){
+    std::stringstream ranking;
+    for(auto can : votes){
+        ranking  << can.first << ": " << can.second << '\n';
+    }
+    return ranking.str();
+}
+
+std::string Voting::getResult(){
+    int max = -1;
+    std::string result = "";
+    for(auto can : votes){
+        if(can.second > max){
+            max = can.second;
+            result = can.first;
+        }
+    }
+
+    return result;
 }

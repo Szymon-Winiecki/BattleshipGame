@@ -16,30 +16,32 @@ enum MessageType{
     SHOWTEAMS = 8,
     LEAVE = 9,
     CHANGETEAM = 10,
+    GETMAP = 11
 };
 
 class Message{
 private:
     MessageType type;
-    std::string gameId;
-    std::string playerId;
-    std::string content;
+    std::string objectId;
+    std::string param1;
+    std::string param2;
 
 public:
     static Message decode(std::string message);
     static Message decode(std::string message, char separator);
 
     Message();
-    Message(MessageType type, std::string gameId, std::string playerId, std::string content);
-    Message(MessageType type, std::string content);
+    Message(MessageType type, std::string objectId, std::string param1, std::string param2);
+    Message(MessageType type, std::string param1);
+    Message(MessageType type);
 
     std::string encode();
     std::string encode(char separator);
 
     MessageType getType();
-    std::string getGameId();
-    std::string getPlayerId();
-    std::string getContent();
+    std::string getObjectId();
+    std::string getParam1();
+    std::string getParam2();
 
     int getLength();
 };

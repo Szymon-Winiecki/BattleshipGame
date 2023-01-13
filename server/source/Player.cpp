@@ -9,10 +9,14 @@ std::string Player::generateId(){
     return id.str();
 }
 
+bool Player::operator==(const Player &rhs){
+    return this->getId() == rhs.getId();
+}
+
 Player::Player() : playerId{ generateId() } {};
 
 
-std::string Player::getId(){
+std::string Player::getId() const{
     return playerId;
 }
 
@@ -24,7 +28,7 @@ void Player::setGame(Game* game){
     this->game = game;
 }
 
-Game* Player::getGame(){
+Game* Player::getGame() const{
     return this->game;
 }
 
@@ -32,13 +36,12 @@ void Player::setTeamId(int team){
     this->teamid = team;
 }
 
-int Player::getTeamId(){
+int Player::getTeamId() const{
     return this->teamid;
 }
 
 
 bool Player::vote(std::string votingId, std::string vote){
-    //Vote v = Vote(this->getId(), game->getId(), votingId, vote);
-    //todo
-    return false;
+    Vote v = Vote(this->getId(), game->getId(), votingId, vote);
+    return game->vote(v);
 }

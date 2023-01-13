@@ -19,14 +19,16 @@ class Player{
         Game* game;
         int teamid;
     public:
+        bool operator==(const Player &rhs);
+
         Player();
-        std::string getId();
+        std::string getId() const;
         void setClient(Client* client);
         void setGame(Game* game);
         void setTeamId(int team);
 
-        Game* getGame();
-        int getTeamId();
+        Game* getGame() const;
+        int getTeamId() const;
 
         bool vote(std::string votingId, std::string vote);
 };
