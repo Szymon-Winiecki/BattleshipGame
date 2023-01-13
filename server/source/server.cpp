@@ -1,4 +1,5 @@
 #include "../include/server.h"
+#include <iostream>
 
 int servFd;
 int epollFd;
@@ -34,17 +35,13 @@ class : Handler {
 
 
 /*FUNKCJE KLASY KLIENTA NA SERWERZE (POZNIEJ PEWNIE PRZENIESIONE CO CLIENT.CPP)*/
-Client::Client(int fd) : _fd(fd) {
+Client::Client(int fd) : _fd(fd), player{nullptr} {
         epoll_event ee {EPOLLIN|EPOLLRDHUP, {.ptr=this}};
         epoll_ctl(epollFd, EPOLL_CTL_ADD, _fd, &ee);
 
-        char buf[256];
-        sprintf(buf,"Witamy na serwerze!\nTwoje unikalne id to: %d\n",_fd);
-        write(buf,strlen(buf));
+        Message* message = new Message(MessageType::INFO,"Witamy na serwerze!\n");
 
-        char buf1[256]; 
-        sprintf(buf1,"Gracz %d dolaczyl do gry\n",_fd);
-        sendToAllBut(_fd, buf1, strlen(buf1));
+        this->writem(message);
     }
 
 Client::~Client(){
@@ -61,33 +58,50 @@ Player* Client::getPlayer(){
     return this->player;
 }
 
+//POKI CO ODBIERAMY ZWYKLY TEKST A WYSYLAMY SFORMATOWANY PRZEZ KLASE MESSAGE
 void Client::handleEvent(uint32_t events){
     if(events & EPOLLIN) {
         char buffer[256]{};
         char buffd[10]{};
         sprintf(buffd,"%d: ", _fd);
         ssize_t count = read(_fd, buffer, 256);
-        if(count > 0){
-            if(buffer[0]=='1'){
-                this->createGame();
-            }
-            else if(buffer[0]=='2'){
-                std::string s(buffer);
-                s=s.substr(2,s.size()-2-1);
-                this->joinGame(s);
-            }
-            else{
-                sendToAllBut(_fd, buffd, strlen(buffd));
-                sendToAllBut(_fd, buffer, count);
+        if(count > 0){ //TESTY
+            std::string s {buffer};
+            Message message;
+            message = message.decode(s); 
+                switch(message.getType()){ 
+                case CREATE:
+                    this->createGame();
+                break;
+                case JOIN:
+                    std::cout<<message.getGameId()<<std::endl;
+                    this->joinGame(message.getGameId());
+                break;
+                case LEAVE:
+                    this->leaveGame();
+                break;
+                case CHANGETEAM:
+                    if(this->getPlayer()->getTeamId() == atoi(message.getContent().c_str())){
+                        Message* message = new Message(MessageType::ERROR,"Juz jestes w tej druzynie\n");
+                        this->writem(message);
+                        break;
+                    }
+                    this->getPlayer()->getGame()->changeTeam(atoi(message.getContent().c_str()),this->getPlayer());
+                    this->showPlayers();
+                break;
+                default:
+                    events |= EPOLLERR;
+                break;
             }
         }
-        else
-            events |= EPOLLERR;
     }
     if(events & ~EPOLLIN){
         remove();
     }
 }
+
+
+
 
 void Client::write(char * buffer, int count){
     if(count != ::write(_fd, buffer, count))
@@ -95,11 +109,21 @@ void Client::write(char * buffer, int count){
     
 }
 
+void Client::writem(Message* message){
+    int count = message->getLength();
+    if(count != ::write(_fd, message->encode().c_str(), count))
+        remove();  
+}
+
+void Client::readm(uint32_t events){
+
+}
+
 void Client::remove() {
     printf("removing %d\n", _fd);
     char buf[255];
     sprintf(buf,"Gracz %d opuscil gre.\n",_fd);
-    sendToAllBut(_fd,buf,strlen(buf));
+    //sendToAllBut(_fd,buf,strlen(buf));
     clients.erase(this);
     delete this;
 }
@@ -113,10 +137,10 @@ void Client::setPlayer(Player* player){
 
 
 
-void Client::createGame(){ //todo: bledy np podczas gdy gracz jest w grze nie moze dolaczyc do innej ani stworzyc 
-    if(this->getPlayer() != NULL){
-        char buf[256] = "Wyjdz z biezacej gry aby stworzyc nowa.\n";
-        write(buf,strlen(buf));
+void Client::createGame(){ 
+    if(this->getPlayer() != nullptr){
+        Message* message = new Message(MessageType::ERROR,"Wyjdz z biezacej gry, aby stworzyc nowa\n");
+        this->writem(message);
         return;
     }
     Game* newGame = new Game();
@@ -125,56 +149,78 @@ void Client::createGame(){ //todo: bledy np podczas gdy gracz jest w grze nie mo
     player->setClient(this);
     player->setGame(newGame);
     this->setPlayer(player);
-    char buf[256];
-    sprintf(buf,"Stworzono gre o id: %s\nTwoje id gracza: %s\n",this->getPlayer()->getGame()->getId().c_str(), this->getPlayer()->getId().c_str());
-    write(buf,strlen(buf));
+    this->showPlayers();
+    Message* message = new Message(MessageType::CREATE,newGame->getId(),player->getId(),"Udalo sie stworzyc\n");
+    this->writem(message);
+
 }
 
 void Client::joinGame(std::string id){
-    if(this->getPlayer() != NULL){
-        char buf[256] = "Wyjdz z biezacej gry aby dolaczyc do innej.\n";
-        write(buf,strlen(buf));
+    if(this->getPlayer() != nullptr){
+        Message* message = new Message(MessageType::ERROR,"Wyjdz z biezacej gry, aby dolaczyc do innej\n");
+        this->writem(message);
         return;
     }
     for (auto const i : games) {
         if(i->getId() == id){
             Player *player = i->join(0);
             if(player==NULL){
-                char buf[] = "Nie udalo sie dolaczyc do gry, lobby jest pelne.\n";
-                write(buf,strlen(buf));
+                Message* message = new Message(MessageType::ERROR,"Lobby jest pelne\n");
+                this->writem(message);
                 return;
             }
             player->setClient(this);
             player->setGame(i);
             this->setPlayer(player);
-            char buf[256];
-            sprintf(buf,"Dolaczono do gry o id: %s\nTwoje id gracza: %s\n",this->getPlayer()->getGame()->getId().c_str(), this->getPlayer()->getId().c_str());
-            write(buf,strlen(buf));
-            showPlayers();
+            this->showPlayers();
+            Message* message = new Message(MessageType::CREATE,i->getId(),player->getId(),"Udalo sie dolaczyc\n");
+            this->writem(message);
             return;
         }
     }
-    char buf[] {"Gra o podanym id nie istnieje\n"};
-    write(buf,strlen(buf));
+    Message* message = new Message(MessageType::ERROR,"Nie ma gry o takim id\n");
+    this->writem(message);
+}
+
+void Client::leaveGame(){ 
+    if(this->getPlayer() == nullptr){
+        Message* message = new Message(MessageType::ERROR,"Nie jestes w zadnej grze\n");
+        this->writem(message);
+        return;
+    }
+    this->getPlayer()->getGame()->leave(this->getPlayer()->getTeamId(),this->getPlayer());
+    this->showPlayers();
+    //games.remove(this->getPlayer()->getGame());
+    this->player = nullptr;
+    Message* message = new Message(MessageType::LEAVE,"Udalo sie wyjsc\n");
+    this->writem(message);
+
 }
 
 
-
-void Client::showPlayers(){
-    char buf[] {"Druzyna nr 0:\n"};
-    write(buf,strlen(buf));
+void Client::showPlayers(){ //do poprawy
+    if(this->getPlayer()==nullptr){
+        Message* message = new Message(MessageType::ERROR,"Nie jestes w zadnej grze\n");
+        this->writem(message);
+        return;
+    }
+    std::string s1{""};
+    std::cout<<"Team 0:"<<std::endl;
     for (auto i: *this->getPlayer()->getGame()->getTeam(0)) {
-        char buf[255] {};
-        sprintf(buf,"%s\n",i.getId().c_str());
-        this->write(buf,strlen(buf));
+        //s1+=i->getId()+"\n";
+        std::cout<<i->getId()<<std::endl;
     }
-    char buf1[] = "Druzyna nr 1:\n";
-    write(buf1,strlen(buf1));
+    Message* message1 = new Message(MessageType::SHOWTEAMS,this->getPlayer()->getGame()->getId(),"0",s1); //nr druzyny jako playerid
+    //this->writem(message1);
+
+    std::string s2{""};
+    std::cout<<"Team 1:"<<std::endl;
     for (auto i: *this->getPlayer()->getGame()->getTeam(1)) {
-        char buf[255] {};
-        sprintf(buf,"%s\n",i.getId().c_str());
-        this->write(buf,strlen(buf));
+        //s2+=i->getId()+"\n";
+        std::cout<<i->getId()<<std::endl;
     }
+    Message* message2 = new Message(MessageType::SHOWTEAMS,this->getPlayer()->getGame()->getId(),"1",s2);
+    //this->writem(message2);
 }
 
 
@@ -255,5 +301,24 @@ void sendToAll(char * buffer, int count){
         Client * client = *it;
         it++;
         client->write(buffer, count);
+    }
+}
+
+void sendToAllInGame(Message* message){ //nie in game tylko test message
+    auto it = clients.begin();
+    while(it!=clients.end()){
+        Client * client = *it;
+        it++;
+        client->writem(message);
+    }
+}
+
+void sendToAllButInGame(int fd, Message* message){ //nie in game tylko test message
+    auto it = clients.begin();
+    while(it!=clients.end()){
+        Client * client = *it;
+        it++;
+        if(client->fd()!=fd)
+            client->writem(message);
     }
 }

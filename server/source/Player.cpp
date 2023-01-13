@@ -28,6 +28,15 @@ Game* Player::getGame(){
     return this->game;
 }
 
+void Player::setTeamId(int team){
+    this->teamid = team;
+}
+
+int Player::getTeamId(){
+    return this->teamid;
+}
+
+
 bool Player::vote(std::string votingId, std::string vote){
     //Vote v = Vote(this->getId(), game->getId(), votingId, vote);
     //todo

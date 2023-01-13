@@ -17,12 +17,16 @@ class Player{
         Client* client;
         std::string playerId;
         Game* game;
+        int teamid;
     public:
         Player();
         std::string getId();
         void setClient(Client* client);
         void setGame(Game* game);
+        void setTeamId(int team);
 
         Game* getGame();
+        int getTeamId();
+
         bool vote(std::string votingId, std::string vote);
 };

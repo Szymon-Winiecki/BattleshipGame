@@ -1,4 +1,4 @@
-#include "../include/Message.h"
+#include "./Message.h"
 
 Message::Message() : Message(MessageType::UNKNOWN, "", "", ""){};
 
@@ -10,8 +10,8 @@ Message::Message(MessageType type, std::string gameId, std::string playerId, std
 
 Message::Message(MessageType type, std::string content) :
     type{ type },
-    gameId{""},
-    playerId{""},
+    gameId{ },
+    playerId{ },
     content{ content } { }
 
 Message Message::decode(std::string message){

@@ -21,7 +21,7 @@ private:
 
     int maxPlayers;
     std::string gameId;
-    std::list<Player> teams[2];
+    std::list<Player*> teams[2];
     long startTime;
     std::unordered_map<std::string, Voting*> activeVotings;
 
@@ -32,6 +32,8 @@ public:
     void start();
     Player* join(int team);
     std::string getId();
-    std::list<Player>* getTeam(int team);
+    std::list<Player*>* getTeam(int team);
     Voting* getVoting(std::string votingId);
+    void changeTeam(int team,Player* player);
+    void leave(int team,Player* player);
 };

@@ -24,16 +24,17 @@ Player* Game::join(int team){
         return NULL;
     }
     assertTeam(team);
-    Player newPlayer = Player();
+    Player* newPlayer = new Player();
+    newPlayer->setTeamId(team);
     teams[team].push_front(newPlayer);
-    return &(*teams[team].begin());
+    return newPlayer;
 }
 
 std::string Game::getId(){
     return gameId;
 }
 
-std::list<Player>* Game::getTeam(int team){
+std::list<Player*>* Game::getTeam(int team){
     assertTeam(team);
     return &teams[team];
 }
@@ -49,4 +50,14 @@ Voting* Game::getVoting(std::string votingId){
         return NULL;
     }
     return activeVotings[votingId];
+}
+
+void Game::leave(int team, Player* player){
+    teams[team].remove(player);
+}
+
+void Game::changeTeam(int team, Player* player){
+    this->leave(abs(team-1),player);
+    player->setTeamId(team);
+    teams[team].push_front(player);
 }

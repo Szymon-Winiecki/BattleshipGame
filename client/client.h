@@ -12,8 +12,14 @@
 #include <poll.h> 
 #include <thread>
 #include <iostream>
-#include "../server/include/Message.h"
+#include "./Message.h"
 
 ssize_t readData(int fd, char * buffer, ssize_t buffsize);
 
 void writeData(int fd, char * buffer, ssize_t count);
+
+void writeDatam(int fd, Message* message);
+
+ssize_t readDatarec(int fd, char * buffer, ssize_t buffsize);
+
+void writeDatatoConsole(int fd, std::string buffer, ssize_t count);
