@@ -40,13 +40,20 @@ private:
 
     void assertTeam(int team);
 public:
+    /*  utworzenie gry - generowene jest id gry i inne wlasciwosci*/
     Game();
+
+    /*  otwarcie gry - graze moga doloczac do gry*/
     void open();
+
+    /*  rozpoczecie gry - rusza pierwsza runda*/
     void start();
+
     void nextRound();
     void runRoundController();
     void sendResult(std::string &result);
 
+    /*  dolaczenie do gry do zespolu 'team' - zwracany jest wskaznik na obiekt gracza. Jezeli nie mozna dolaczyc do gry zwaracana jest wartosc NULL*/
     Player* join(int team);
     void changeTeam(int team,Player* player);
     void leave(int team,Player* player);
