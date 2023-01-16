@@ -28,7 +28,7 @@ class Client : Handler{
         
         void createGame();
         void joinGame(std::string id);
-        void leaveGame(); //do zrobienia
+        void leaveGame(); 
 
         void setPlayer(Player* player);
         void showPlayers();

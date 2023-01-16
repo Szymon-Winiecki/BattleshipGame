@@ -43,7 +43,7 @@ public:
     /*  utworzenie gry - generowene jest id gry i inne wlasciwosci*/
     Game();
 
-    /*  otwarcie gry - graze moga doloczac do gry*/
+    /*  otwarcie gry - gracze moga dolaczac do gry*/
     void open();
 
     /*  rozpoczecie gry - rusza pierwsza runda*/

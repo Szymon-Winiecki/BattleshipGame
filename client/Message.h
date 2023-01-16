@@ -16,7 +16,10 @@ enum MessageType{
     SHOWTEAMS = 8,
     LEAVE = 9,
     CHANGETEAM = 10,
-    GETMAP = 11
+    GETMAP = 11,
+    SERVERERROR = 12,
+    PLAYERERROR = 13,
+    SENDFD = 14,
 };
 
 class Message{

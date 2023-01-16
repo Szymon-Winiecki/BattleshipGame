@@ -25,12 +25,12 @@
 
 void ctrl_c(int);
 
-void sendToAllBut(int fd, char * buffer, int count);
-void sendToAll(char * buffer, int count);
-
+void sendToAllBut(int fd, char * buffer, int count); //do usuniecia
+void sendToAll(char * buffer, int count); //do usuniecia
+void sendToAllButInGame(int fd, Message* message);
 uint16_t readPort(char * txt);
 
 void setReuseAddr(int sock);
 
 
-void run(int argc, char ** argv);
+void run(int argc, char ** argv); //przerobic

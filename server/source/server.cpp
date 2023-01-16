@@ -39,9 +39,10 @@ Client::Client(int fd) : _fd(fd), player{nullptr} {
         epoll_event ee {EPOLLIN|EPOLLRDHUP, {.ptr=this}};
         epoll_ctl(epollFd, EPOLL_CTL_ADD, _fd, &ee);
 
-        Message* message = new Message(MessageType::INFO,"Witamy na serwerze!\n");
-
+        Message* message = new Message(MessageType::INFO,"Witamy na serwerze!");
         this->writem(message);
+        Message* message1 = new Message(MessageType::INFO,"Druga testowa wiadomosc!");
+        this->writem(message1);
     }
 
 Client::~Client(){
@@ -58,23 +59,24 @@ Player* Client::getPlayer(){
     return this->player;
 }
 
-//POKI CO ODBIERAMY ZWYKLY TEKST A WYSYLAMY SFORMATOWANY PRZEZ KLASE MESSAGE
 void Client::handleEvent(uint32_t events){
     if(events & EPOLLIN) {
         char buffer[256]{};
         char buffd[10]{};
         sprintf(buffd,"%d: ", _fd);
         ssize_t count = read(_fd, buffer, 256);
-        if(count > 0){ //TESTY
+        if(count > 0){ 
             std::string s {buffer};
             Message message = Message::decode(s);
             switch(message.getType()){ 
                 case CREATE:
                     this->createGame();
+                    this->showPlayers();
                 break;
                 case JOIN:
                     std::cout<<message.getObjectId()<<std::endl;
                     this->joinGame(message.getObjectId());
+                    this->showPlayers();
                 break;
                 case LEAVE:
                     this->leaveGame();
@@ -105,9 +107,13 @@ void Client::handleEvent(uint32_t events){
                     Message* message = new Message(MessageType::GETMAP, getPlayer()->getGame()->getSerializedMap(team, showShips));
                     this->writem(message);
                 break;}
+                case SHOWTEAMS:
+                    this->showPlayers();
+                break;
                 default:
                     events |= EPOLLERR;
                 break;
+
             }
         }
     }
@@ -163,7 +169,6 @@ void Client::createGame(){
     player->setClient(this);
     player->setGame(newGame);
     this->setPlayer(player);
-    this->showPlayers();
     Message* message = new Message(MessageType::CREATE,newGame->getId(),player->getId(),"Udalo sie stworzyc\n");
     this->writem(message);
 
@@ -186,7 +191,6 @@ void Client::joinGame(std::string id){
             player->setClient(this);
             player->setGame(i);
             this->setPlayer(player);
-            this->showPlayers();
             Message* message = new Message(MessageType::CREATE,i->getId(),player->getId(),"Udalo sie dolaczyc\n");
             this->writem(message);
             return;
@@ -197,44 +201,49 @@ void Client::joinGame(std::string id){
 }
 
 void Client::leaveGame(){ 
-    if(this->getPlayer() == nullptr){
+    if(this->player == nullptr){
         Message* message = new Message(MessageType::ERROR,"Nie jestes w zadnej grze\n");
         this->writem(message);
         return;
     }
     this->getPlayer()->getGame()->leave(this->getPlayer()->getTeamId(),this->getPlayer());
-    this->showPlayers();
-    //games.remove(this->getPlayer()->getGame());
     this->player = nullptr;
     Message* message = new Message(MessageType::LEAVE,"Udalo sie wyjsc\n");
     this->writem(message);
 
+    //Message* message1 = new Message(MessageType::PLAYERLEFT,this->getPlayer()->getId());
+    //sendToAllButInGame(this->fd(),message1); //do zrobienia - wazne
+
 }
 
 
-void Client::showPlayers(){ //do poprawy
+
+void Client::showPlayers(){ //do poprawy czy to kiedys poprawnie zadziala?
     if(this->getPlayer()==nullptr){
         Message* message = new Message(MessageType::ERROR,"Nie jestes w zadnej grze\n");
         this->writem(message);
         return;
     }
     std::string s1{""};
-    std::cout<<"Team 0:"<<std::endl;
-    for (auto i: *this->getPlayer()->getGame()->getTeam(0)) {
-        //s1+=i->getId()+"\n";
-        std::cout<<i.getId()<<std::endl;
+    if(this->getPlayer()->getGame()->getTeam(0)->size() > 0){
+        for (auto i: *this->getPlayer()->getGame()->getTeam(0)) {
+            s1+=i.getId();
+            s1+=" ";
+        }
     }
-    Message* message1 = new Message(MessageType::SHOWTEAMS,this->getPlayer()->getGame()->getId(),"0",s1); //nr druzyny jako playerid
-    //this->writem(message1);
+    Message* message1 = new Message(MessageType::SHOWTEAMS,this->getPlayer()->getGame()->getId(),"Team 0:",s1); 
+    this->writem(message1);
 
     std::string s2{""};
-    std::cout<<"Team 1:"<<std::endl;
-    for (auto i: *this->getPlayer()->getGame()->getTeam(1)) {
-        //s2+=i->getId()+"\n";
-        std::cout<<i.getId()<<std::endl;
+    if(this->getPlayer()->getGame()->getTeam(1)->size() > 0){
+        for (auto i: *this->getPlayer()->getGame()->getTeam(1)) {
+            s2+=i.getId();
+            s2+=" ";
+        }
     }
-    Message* message2 = new Message(MessageType::SHOWTEAMS,this->getPlayer()->getGame()->getId(),"1",s2);
-    //this->writem(message2);
+    //jak s2 zostaje puste "" to klient przy odbieraniu wypisuje '}' przy buforsize 20
+    Message* message2 = new Message(MessageType::SHOWTEAMS,this->getPlayer()->getGame()->getId(),"Team 1:",s2); 
+    this->writem(message2);
 }
 
 
@@ -289,9 +298,8 @@ void setReuseAddr(int sock){
 }
 
 void ctrl_c(int){
-    char buf[] = "0"; //tymczasowe informowanie klientow o zamknieciu serwera
+    //zrobic tu informowanie klientow o zamknieciu serwera ASAP
     for(Client * client : clients){
-        client->write(buf,2);
         delete client;
     }
     printf("Closing server\n");
@@ -299,7 +307,7 @@ void ctrl_c(int){
     exit(0);
 }
 
-void sendToAllBut(int fd, char * buffer, int count){
+void sendToAllBut(int fd, char * buffer, int count){ //do usuniecia
     auto it = clients.begin();
     while(it!=clients.end()){
         Client * client = *it;
@@ -309,7 +317,7 @@ void sendToAllBut(int fd, char * buffer, int count){
     }
 }
 
-void sendToAll(char * buffer, int count){
+void sendToAll(char * buffer, int count){ //do usuniecia
     auto it = clients.begin();
     while(it!=clients.end()){
         Client * client = *it;
@@ -318,7 +326,7 @@ void sendToAll(char * buffer, int count){
     }
 }
 
-void sendToAllInGame(Message* message){ //nie in game tylko test message
+void sendToAllInGame(Message* message){ //nw
     auto it = clients.begin();
     while(it!=clients.end()){
         Client * client = *it;
@@ -327,7 +335,7 @@ void sendToAllInGame(Message* message){ //nie in game tylko test message
     }
 }
 
-void sendToAllButInGame(int fd, Message* message){ //nie in game tylko test message
+void sendToAllButInGame(int fd, Message* message){ //naprawic i zrobic in game serio
     auto it = clients.begin();
     while(it!=clients.end()){
         Client * client = *it;

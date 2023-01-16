@@ -30,11 +30,13 @@ Message Message::decode(std::string message, char separator){
     
     std::string typestr;
     std::getline(encoded, typestr, separator);
+    //typestr = typestr.erase(0); //usuwanie { ?
     decoded.type = (MessageType) atoi(typestr.c_str());
 
     std::getline(encoded, decoded.objectId, separator);
     std::getline(encoded, decoded.param1, separator);
     std::getline(encoded, decoded.param2);
+    //std::getline(encoded, decoded.param2, '}');
     
     return decoded;
 }
@@ -45,6 +47,7 @@ std::string Message::encode(){
 
 std::string Message::encode(char separator){
     std::stringstream encoded;
+    //encoded << '{' << this->type << separator << this->objectId << separator << this->param1 << separator << this->param2 << '}';
     encoded << this->type << separator << this->objectId << separator << this->param1 << separator << this->param2;
     return encoded.str();
 }

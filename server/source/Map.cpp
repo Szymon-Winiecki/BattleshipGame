@@ -80,7 +80,7 @@ FieldStatus Map::shoot(int x, int y){
         }
         if(sunk){
             next = FieldStatus::SUNK;
-            for(std::vector field : ship){
+            for(std::vector<int> field : ship){
                 map[field[0]][field[1]] = FieldStatus::SUNK;
             }
         }
