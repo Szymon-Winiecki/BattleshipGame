@@ -42,3 +42,37 @@ cmake ..
 cmake --build .
 ```
 program zostanie skompilowany do `server/bin/Battleship_game`
+
+
+### klient
+
+do uruchomienia z plików źródłowych i spakowania paczki do dystrybucji wymagany jest nodejs (18.x lub nowszy) i npm
+
+#### pierwsze uruchomienie:
+
+	cd NodeGuiClient
+	npm install
+	npm start
+
+jeżeli aplikacja się nie uruchamia, lub pojawiają się błędy:
+
+	sudo apt-get install libqt5gui5
+	QT_LINK_MIRROR=https://qt-mirror.dannhauer.de
+	npm install @nodegui/nodegui
+	npm start
+	
+### uruchomienie
+
+	cd NodeGuiClient
+	npm start
+
+### przed pierwszym przygotowaniem paczki do dystrybucji:
+
+	sudo apt install libfuse2
+
+### przygotowanie paczki do dystrybucji:
+
+	npm run build
+	npx nodegui-packer --pack ./dist
+
+paczka zostanie wygenerowana w `NodeGuiClient/deploy/linux/build/BattleshipGameClient` , znajduje się tam plik `AppRun` do uruchomienia apliakcji

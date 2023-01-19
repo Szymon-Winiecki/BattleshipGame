@@ -1,2 +1,8 @@
 */build
 */bin
+
+node_modules
+dist/
+deploy/
+*.log
+.vscode
