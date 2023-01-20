@@ -1,4 +1,6 @@
 const { QLabel, FlexLayout, QWidget, QMainWindow, QLineEdit, QPushButton } = require("@nodegui/nodegui");
+const boardGui = require("./boardGUI");
+const Board = require("./board");
 const connection = require("./connection");
 
 function initWindow(){
@@ -50,6 +52,7 @@ function showConnectionConfiguration(){
 
   const addrInput = new QLineEdit();
   addrInput.setObjectName("addrInput");
+  addrInput.setText('127.0.0.1');
 
   const portInputLabel = new QLabel();
   portInputLabel.setText("port:  ");
@@ -57,6 +60,7 @@ function showConnectionConfiguration(){
 
   const portInput = new QLineEdit();
   portInput.setObjectName("portInput");
+  portInput.setText("1234");
 
   const connectButton = new QPushButton();
   connectButton.setText("Połącz");
@@ -123,8 +127,15 @@ function showBoard(){
   const gameLabel = new QLabel();
   gameLabel.setObjectName("gameLabel");
   gameLabel.setText("Gra w statki");
+
+  function onClick(x, y){
+    console.log("[" + x + ",  " + y + "]");
+  }
+
+  const boardView = boardGui.drawBoard(Board.decode("6|001000001010203010020000000440000020"), 20, onClick);
   
   rootViewLayout.addWidget(gameLabel);
+  rootViewLayout.addWidget(boardView);
 
   rootView.setStyleSheet(`
     #rootView {
