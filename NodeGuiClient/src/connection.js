@@ -33,6 +33,7 @@ client.on('data', function(data) {
   console.log('Bytes read : ' + bread);
   console.log('Data read: ' + data);
   var data1 = data.toString().split('}'); //zrobic jakos inaczej split bo zostawia na koncu pusta "" wiadomosc
+  data1.pop(); //usuwa ostatnią (pustą) wiadomość
 
   let message = new Message();
   let i = 0;

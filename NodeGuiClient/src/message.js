@@ -35,7 +35,7 @@ class Message {
     decode(message, separator = '|') {
       let decoded = new Message();
       let encoded = message.split(separator);
-      decoded.#type = encoded[0] || "";
+      decoded.#type = parseInt(encoded[0].substring(1)) || ""; //na początku jest jeszcze '{'
       decoded.#objectId = encoded[1] || "";
       decoded.#param1 = encoded[2] || "";
       decoded.#param2 = encoded[3] || "";
