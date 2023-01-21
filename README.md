@@ -69,6 +69,7 @@ jeżeli aplikacja się nie uruchamia, lub pojawiają się błędy:
 ### przed pierwszym przygotowaniem paczki do dystrybucji:
 
 	sudo apt install libfuse2
+	npx nodegui-packer --init BattleshipGameClient
 
 ### przygotowanie paczki do dystrybucji:
 
