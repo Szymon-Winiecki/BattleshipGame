@@ -108,8 +108,8 @@ class GuiBoard extends GuiWidget{
     #boardView > QPushButton.sunk{
       background-color: black;
     }
-    ${this.#interactive ? '' : '#boardView > QPushButton.clear:hover{ border: 1px solid black; }'}  //można wybrać głosować tylko na pola typu 'clear' na planszy przeciwnika, więc nie tylke te będą reagować na najechanie lub kliknięcie
-    ${this.#interactive ? '' : '#boardView > QPushButton.clear:focus{ border: 1px solid black; }'}
+    ${this.#interactive ? '#boardView > QPushButton.clear:hover{ border: 1px solid black; }' : ' '}
+    ${this.#interactive ? '#boardView > QPushButton.clear:focus{ border: 1px solid black; }' : ' '}
   `);
   }
 
