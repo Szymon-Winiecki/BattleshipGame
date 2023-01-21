@@ -8,7 +8,7 @@ ShotVoting::ShotVoting(std::string gameId, std::list<Player>* allowedPlayers, lo
     Voting(gameId, allowedPlayers, startTime, duration),
     map { map } { }
 
-std::vector<int> ShotVoting::decodeVote(std::string& votestr, char separator){
+std::vector<int> ShotVoting::decodeVote(std::string votestr, char separator){
     std::vector<int> cords = {0, 0};
     int sep = votestr.find(separator);
     cords[0] = atoi(votestr.substr(0, sep).c_str());
@@ -25,9 +25,12 @@ bool ShotVoting::validateShot(int x, int y){
 bool ShotVoting::validate(Vote& vote){
     if(!Voting::validate(vote)) return false;
 
-    std::string votestr = vote.getVote();
-    std::vector<int> cords = decodeVote(votestr, '|');
+    std::vector<int> cords = decodeVote(vote.getVote(), '|');
     if(!validateShot(cords[0], cords[1])) return false;
     
     return true;
+}
+
+std::vector<int> ShotVoting::getDecodedResult(){
+    return decodeVote(Voting::getResult(), '|');
 }

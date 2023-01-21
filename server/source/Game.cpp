@@ -34,6 +34,18 @@ void Game::start(){
     started = true;
     startTime = std::chrono::duration_cast< std::chrono::milliseconds >(std::chrono::system_clock::now().time_since_epoch()).count();
 
+    Message team0map0 = Message(MessageType::GETMAP, "", "0", maps[0].serialize(false, '|'));
+    Message team0map1 = Message(MessageType::GETMAP, "", "1", maps[1].serialize(true, '|'));
+
+    sendToTeam(team0map0, 0);
+    sendToTeam(team0map1, 0);
+
+    Message team1map0 = Message(MessageType::GETMAP, "", "0", maps[0].serialize(true, '|'));
+    Message team1map1 = Message(MessageType::GETMAP, "", "1", maps[1].serialize(false, '|'));
+
+    sendToTeam(team1map0, 1);
+    sendToTeam(team1map1, 1);
+
     nextRound();
 }
 
@@ -67,11 +79,16 @@ void Game::sendNextRoundInfo(){
     sendToAllPlayers(m);
 }
 
+void Game::sendToTeam(Message &message, int team){
+    assertTeam(team);
+    for(auto player : teams[team]){
+        player.sendMessage(message);
+    }
+}
+
 void Game::sendToAllPlayers(Message &message){
-    for(auto team : teams){
-        for(auto player : team){
-            player.sendMessage(message);
-        }
+    for(int i = 0; i < 2; ++i){
+        sendToTeam(message, i);
     }
 }
 

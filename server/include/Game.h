@@ -44,6 +44,7 @@ private:
     
     void shoot(int map, int x, int y);
 
+    void sendToTeam(Message &message, int team);
     void sendToAllPlayers(Message &message);
     void assertTeam(int team);
 public:
