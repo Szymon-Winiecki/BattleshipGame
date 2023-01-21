@@ -1,14 +1,13 @@
 const { QLabel, FlexLayout, QWidget, QMainWindow, QLineEdit, QPushButton } = require("@nodegui/nodegui");
-const boardGui = require("./boardGUI");
+const GuiBoard = require("./GuiWidgets/guiBoard");
 const Board = require("./board");
 const connection = require("./connection");
 
 function initWindow(){
   const win = new QMainWindow();
   win.setWindowTitle('Battleship');
-  win.resize(400, 200);
+  win.resize(800, 600);
 
-  win.resize(400, 200);
   win.show();
   global.win = win;
 
@@ -132,7 +131,11 @@ function showBoard(){
     console.log("[" + x + ",  " + y + "]");
   }
 
-  const boardView = boardGui.drawBoard(Board.decode("6|001000001010203010020000000440000020"), 20, onClick);
+  const board = Board.decode("6|001000001010203010020000000440000020");
+  const guiBoard = new GuiBoard(board);
+  guiBoard.setFieldSize(40);
+  guiBoard.setOnClick(onClick);
+  const boardView = guiBoard.getWidget();
   
   rootViewLayout.addWidget(gameLabel);
   rootViewLayout.addWidget(boardView);
