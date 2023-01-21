@@ -10,6 +10,7 @@ class GuiBoard extends GuiWidget{
 
   //
   #board;
+  #interactive;
   #onClick = (x, y) => {
     console.log(`(${x}, ${y})`);
   };
@@ -19,10 +20,13 @@ class GuiBoard extends GuiWidget{
   #boardViewLayout;
   #fieldsWidgets;
 
-  constructor(board){
+
+  // board - obiekt klasy Board reprezentujacy planszę do wyświetlenia, interactive - czy można na niej głosować (tylko na planszy przeciwnika można głosować)
+  constructor(board, interactive){
     super();
 
     this.#board = board;
+    this.#interactive = interactive;
 
     this.#boardView = new QWidget();
     this.#boardViewLayout = new FlexLayout();
@@ -39,7 +43,9 @@ class GuiBoard extends GuiWidget{
         this.#fieldsWidgets[j][i] = new QPushButton();
         this.#boardViewLayout.addWidget(this.#fieldsWidgets[j][i]);
         this.#fieldsWidgets[j][i].addEventListener("clicked", () => {
-          this.#onClick(j, i);
+          if(this.#interactive && this.#fieldsWidgets[j][i].property('class') == 'clear'){ //można zagłosować tylko na pola typu 'clear' na planysz przeciwnika, więc tylko te będą uruchamiały event
+            this.#onClick(j, i);
+          }
         });
       }
     }
@@ -48,24 +54,26 @@ class GuiBoard extends GuiWidget{
     this.updateStyle();
   }
 
+
+  //do wywołania przy każdej zmianie statusu pola przypisuje odpowiednie klasy wszystkim polom, żeby się odpowiednio kolorowały (być może trzeba będzie potem wywołać updateStyle() - do sprawdzenia)
   updateFields(){
     for(let i = 0; i < this.#board.getSize(); ++i){
       for(let j = 0; j < this.#board.getSize(); ++j){
         const status = this.#board.getStatus(j, i);
         if(status == Board.FieldStatus.CLEAR){
-          this.#fieldsWidgets[j][i].setInlineStyle("background-color: blue;")
+          this.#fieldsWidgets[j][i].setProperty("class", "clear");
         }
         else if(status == Board.FieldStatus.SHIP){
-          this.#fieldsWidgets[j][i].setInlineStyle("background-color: green;")
+          this.#fieldsWidgets[j][i].setProperty("class", "ship");
         }
         else if(status == Board.FieldStatus.MISS){
-          this.#fieldsWidgets[j][i].setInlineStyle("background-color: grey;")
+          this.#fieldsWidgets[j][i].setProperty("class", "miss");
         }
         else if(status == Board.FieldStatus.HIT){
-          this.#fieldsWidgets[j][i].setInlineStyle("background-color: darkred;")
+          this.#fieldsWidgets[j][i].setProperty("class", "hit");
         }
         else if(status == Board.FieldStatus.SUNK){
-          this.#fieldsWidgets[j][i].setInlineStyle("background-color: black;")
+          this.#fieldsWidgets[j][i].setProperty("class", "sunk");
         }
       }
     }
@@ -85,14 +93,33 @@ class GuiBoard extends GuiWidget{
       width: ${this.#fieldSize}px;
       height: ${this.#fieldSize}px;
     }
+    #boardView > QPushButton.clear{
+      background-color: blue;
+    }
+    #boardView > QPushButton.ship{
+      background-color: green;
+    }
+    #boardView > QPushButton.miss{
+      background-color: grey;
+    }
+    #boardView > QPushButton.hit{
+      background-color: darkred;
+    }
+    #boardView > QPushButton.sunk{
+      background-color: black;
+    }
+    ${this.#interactive ? '' : '#boardView > QPushButton.clear:hover{ border: 1px solid black; }'}  //można wybrać głosować tylko na pola typu 'clear' na planszy przeciwnika, więc nie tylke te będą reagować na najechanie lub kliknięcie
+    ${this.#interactive ? '' : '#boardView > QPushButton.clear:focus{ border: 1px solid black; }'}
   `);
   }
 
+  // ustawia rozmiar (szerokość i wysokość) pojedynczego pola w px
   setFieldSize(size){
     this.#fieldSize = size;
     this.updateStyle();
   }
 
+  // ustawia funkcję jaka ma być wywołana po kliknięcu w pol, powinna przyjmować dwa argumenty - x i y kliknietgo pola
   setOnClick(callback){
     this.#onClick = callback;
   }
@@ -102,57 +129,5 @@ class GuiBoard extends GuiWidget{
   }
 
 }
-
-
-/*function drawBoard(board, fieldSize, onClickCallback){
-  const boardView = new QWidget();
-  const boardViewLayout = new FlexLayout();
-  boardView.setLayout(boardViewLayout);
-  boardView.setObjectName("boardView");
-  
-  for(let i = 0; i < board.getSize(); ++i){
-    for(let j = 0; j < board.getSize(); ++j){
-      const field = new QPushButton();
-      boardViewLayout.addWidget(field);
-      field.addEventListener("clicked", () => {
-        onClickCallback(j, i);
-      })
-
-      const status = board.getStatus(j, i);
-      if(status == Board.FieldStatus.CLEAR){
-        field.setInlineStyle("background-color: blue;")
-      }
-      else if(status == Board.FieldStatus.SHIP){
-        field.setInlineStyle("background-color: green;")
-      }
-      else if(status == Board.FieldStatus.MISS){
-        field.setInlineStyle("background-color: grey;")
-      }
-      else if(status == Board.FieldStatus.HIT){
-        field.setInlineStyle("background-color: darkred;")
-      }
-      else if(status == Board.FieldStatus.SUNK){
-        field.setInlineStyle("background-color: black;")
-      }
-    }
-  }
-
-  boardView.setStyleSheet(`
-    #boardView {
-      width: ${board.getSize() * fieldSize + 10}px;
-      align-items: 'center';
-      justify-content: 'center';
-      padding: 5px;
-      flex-direction: 'row';
-      flex-wrap: 'wrap';
-    }
-    #boardView > QPushButton{
-      width: ${fieldSize}px;
-      height: ${fieldSize}px;
-    }
-  `);
-
-  return boardView;
-}*/
 
 module.exports = GuiBoard;
