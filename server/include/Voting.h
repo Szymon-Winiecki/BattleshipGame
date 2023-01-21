@@ -40,4 +40,5 @@ public:
     bool vote(Vote& vote);
     std::string getResult();
     std::string getRanking();
+    long getEndTime();
 };

@@ -30,5 +30,6 @@ class Player{
         Game* getGame() const;
         int getTeamId() const;
 
+        void sendMessage(Message &message);
         bool vote(std::string votingId, std::string vote);
 };

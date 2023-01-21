@@ -40,6 +40,9 @@ int Player::getTeamId() const{
     return this->teamid;
 }
 
+void Player::sendMessage(Message &message){
+    this->client->writem(message);
+}
 
 bool Player::vote(std::string votingId, std::string vote){
     Vote v = Vote(this->getId(), game->getId(), votingId, vote);

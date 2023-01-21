@@ -98,3 +98,7 @@ std::string Voting::getResult(){
 
     return result;
 }
+
+long Voting::getEndTime(){
+    return startTime + duration;
+}

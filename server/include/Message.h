@@ -20,6 +20,8 @@ enum MessageType{
     SERVERERROR = 12,
     PLAYERERROR = 13,
     SENDFD = 14,
+    VOTERESULT = 15,
+    NEXTROUND = 16
 };
 
 class Message{

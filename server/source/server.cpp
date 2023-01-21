@@ -39,9 +39,9 @@ Client::Client(int fd) : _fd(fd), player{nullptr} {
         epoll_event ee {EPOLLIN|EPOLLRDHUP, {.ptr=this}};
         epoll_ctl(epollFd, EPOLL_CTL_ADD, _fd, &ee);
 
-        Message* message = new Message(MessageType::INFO,"Witamy na serwerze!");
+        Message message = Message(MessageType::INFO,"Witamy na serwerze!");
         this->writem(message);
-        Message* message1 = new Message(MessageType::INFO,"Druga testowa wiadomosc!");
+        Message message1 = Message(MessageType::INFO,"Druga testowa wiadomosc!");
         this->writem(message1);
 
     }
@@ -84,7 +84,7 @@ void Client::handleEvent(uint32_t events){
                 break;
                 case CHANGETEAM:
                     if(this->getPlayer()->getTeamId() == atoi(message.getParam1().c_str())){
-                        Message* message = new Message(MessageType::ERROR,"Juz jestes w tej druzynie\n");
+                        Message message = Message(MessageType::ERROR,"Juz jestes w tej druzynie\n");
                         this->writem(message);
                         break;
                     }
@@ -94,18 +94,18 @@ void Client::handleEvent(uint32_t events){
                 case GETMAP:{
                     int team = atoi(message.getParam1().c_str());
                     if(getPlayer() == NULL || getPlayer()->getGame() == NULL){
-                        Message* message = new Message(MessageType::ERROR,"Aby pobrac mape musisz byc w grze\n");
+                        Message message = Message(MessageType::ERROR,"Aby pobrac mape musisz byc w grze\n");
                         this->writem(message);
                         break;
                     }
                     if(team < 0 || team > 1){
-                        Message* message = new Message(MessageType::ERROR,"Sa tylko dwie druzyny: 0 i 1\n");
+                        Message message = Message(MessageType::ERROR,"Sa tylko dwie druzyny: 0 i 1\n");
                         this->writem(message);
                         break;
                     }
                     bool showShips = false;
                     if(getPlayer()->getTeamId() == team) showShips = true;
-                    Message* message = new Message(MessageType::GETMAP, getPlayer()->getGame()->getSerializedMap(team, showShips));
+                    Message message = Message(MessageType::GETMAP, getPlayer()->getGame()->getSerializedMap(team, showShips));
                     this->writem(message);
                 break;}
                 case SHOWTEAMS:
@@ -129,9 +129,9 @@ void Client::write(char * buffer, int count){
     }
 }
 
-void Client::writem(Message* message){
-    int count = message->getLength();
-    if(count != ::write(_fd, message->encode().c_str(), count)){
+void Client::writem(Message &message){
+    int count = message.getLength();
+    if(count != ::write(_fd, message.encode().c_str(), count)){
         remove();
     }  
 }
@@ -160,7 +160,7 @@ void Client::setPlayer(Player* player){
 
 void Client::createGame(){ 
     if(this->getPlayer() != nullptr){
-        Message* message = new Message(MessageType::ERROR,"Wyjdz z biezacej gry, aby stworzyc nowa\n");
+        Message message = Message(MessageType::ERROR,"Wyjdz z biezacej gry, aby stworzyc nowa\n");
         this->writem(message);
         return;
     }
@@ -170,14 +170,14 @@ void Client::createGame(){
     player->setClient(this);
     player->setGame(newGame);
     this->setPlayer(player);
-    Message* message = new Message(MessageType::CREATE,newGame->getId(),player->getId(),"Udalo sie stworzyc\n");
+    Message message = Message(MessageType::CREATE,newGame->getId(),player->getId(),"Udalo sie stworzyc\n");
     this->writem(message);
 
 }
 
 void Client::joinGame(std::string id){
     if(this->getPlayer() != nullptr){
-        Message* message = new Message(MessageType::ERROR,"Wyjdz z biezacej gry, aby dolaczyc do innej\n");
+        Message message = Message(MessageType::ERROR,"Wyjdz z biezacej gry, aby dolaczyc do innej\n");
         this->writem(message);
         return;
     }
@@ -185,34 +185,34 @@ void Client::joinGame(std::string id){
         if(i->getId() == id){
             Player *player = i->join(0);
             if(player==NULL){
-                Message* message = new Message(MessageType::ERROR,"Lobby jest pelne\n");
+                Message message = Message(MessageType::ERROR,"Lobby jest pelne\n");
                 this->writem(message);
                 return;
             }
             player->setClient(this);
             player->setGame(i);
             this->setPlayer(player);
-            Message* message = new Message(MessageType::CREATE,i->getId(),player->getId(),"Udalo sie dolaczyc\n");
+            Message message = Message(MessageType::CREATE,i->getId(),player->getId(),"Udalo sie dolaczyc\n");
             this->writem(message);
             return;
         }
     }
-    Message* message = new Message(MessageType::ERROR,"Nie ma gry o takim id\n");
+    Message message = Message(MessageType::ERROR,"Nie ma gry o takim id\n");
     this->writem(message);
 }
 
 void Client::leaveGame(){ 
     if(this->player == nullptr){
-        Message* message = new Message(MessageType::ERROR,"Nie jestes w zadnej grze\n");
+        Message message = Message(MessageType::ERROR,"Nie jestes w zadnej grze\n");
         this->writem(message);
         return;
     }
     this->getPlayer()->getGame()->leave(this->getPlayer()->getTeamId(),this->getPlayer());
     this->player = nullptr;
-    Message* message = new Message(MessageType::LEAVE,"Udalo sie wyjsc\n");
+    Message message = Message(MessageType::LEAVE,"Udalo sie wyjsc\n");
     this->writem(message);
 
-    //Message* message1 = new Message(MessageType::PLAYERLEFT,this->getPlayer()->getId());
+    //Message message1 = Message(MessageType::PLAYERLEFT,this->getPlayer()->getId());
     //sendToAllButInGame(this->fd(),message1); //do zrobienia - wazne
 
 }
@@ -221,7 +221,7 @@ void Client::leaveGame(){
 
 void Client::showPlayers(){ //do poprawy czy to kiedys poprawnie zadziala?
     if(this->getPlayer()==nullptr){
-        Message* message = new Message(MessageType::ERROR,"Nie jestes w zadnej grze\n");
+        Message message = Message(MessageType::ERROR,"Nie jestes w zadnej grze\n");
         this->writem(message);
         return;
     }
@@ -232,7 +232,7 @@ void Client::showPlayers(){ //do poprawy czy to kiedys poprawnie zadziala?
             s1+=" ";
         }
     }
-    Message* message1 = new Message(MessageType::SHOWTEAMS,this->getPlayer()->getGame()->getId(),"Team 0:",s1); 
+    Message message1 = Message(MessageType::SHOWTEAMS,this->getPlayer()->getGame()->getId(),"Team 0:",s1); 
     this->writem(message1);
 
     std::string s2{""};
@@ -243,7 +243,7 @@ void Client::showPlayers(){ //do poprawy czy to kiedys poprawnie zadziala?
         }
     }
     //jak s2 zostaje puste "" to klient przy odbieraniu wypisuje '}' przy buforsize 20
-    Message* message2 = new Message(MessageType::SHOWTEAMS,this->getPlayer()->getGame()->getId(),"Team 1:",s2); 
+    Message message2 = Message(MessageType::SHOWTEAMS,this->getPlayer()->getGame()->getId(),"Team 1:",s2); 
     this->writem(message2);
 }
 
@@ -327,7 +327,7 @@ void sendToAll(char * buffer, int count){ //do usuniecia
     }
 }
 
-void sendToAllInGame(Message* message){ //nw
+void sendToAllInGame(Message message){ //nw
     auto it = clients.begin();
     while(it!=clients.end()){
         Client * client = *it;
@@ -336,7 +336,7 @@ void sendToAllInGame(Message* message){ //nw
     }
 }
 
-void sendToAllButInGame(int fd, Message* message){ //naprawic i zrobic in game serio
+void sendToAllButInGame(int fd, Message message){ //naprawic i zrobic in game serio
     auto it = clients.begin();
     while(it!=clients.end()){
         Client * client = *it;

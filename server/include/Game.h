@@ -14,6 +14,7 @@
 #include "./Voting.h"
 #include "./Vote.h"
 #include "./Map.h"
+#include "./Message.h"
 
 
 class Player;
@@ -38,6 +39,9 @@ private:
     int currentTeam;
     Voting* activeVoting;
 
+    void sendResult(std::string &result);
+    void sendNextRoundInfo();
+    void sendToAllPlayers(Message &message);
     void assertTeam(int team);
 public:
     /*  utworzenie gry - generowene jest id gry i inne wlasciwosci*/
@@ -51,7 +55,6 @@ public:
 
     void nextRound();
     void runRoundController();
-    void sendResult(std::string &result);
 
     /*  dolaczenie do gry do zespolu 'team' - zwracany jest wskaznik na obiekt gracza. Jezeli nie mozna dolaczyc do gry zwaracana jest wartosc NULL*/
     Player* join(int team);

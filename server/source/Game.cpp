@@ -40,13 +40,12 @@ void Game::start(){
 void Game::nextRound(){
     if(activeVoting != NULL){
         std::string result = activeVoting->getResult();
-        //std::string result = activeVoting->getRanking();
-        //result = activeVoting->getVotingId() + ":\n" + result + '\n';
-        //sendResult(result);
+        sendResult(result);
     }
     delete activeVoting;
     currentTeam = 1 - currentTeam;
     activeVoting = new Voting(getId(), getTeam(currentTeam), roundDuration);
+    sendNextRoundInfo();
 
     runRoundController();
 }
@@ -59,7 +58,21 @@ void Game::runRoundController(){
 }
 
 void Game::sendResult(std::string &result){
-    std::cout << result << std::endl;
+    Message m = Message(VOTERESULT, activeVoting->getVotingId(), std::to_string(currentTeam), result);
+    sendToAllPlayers(m);
+}
+
+void Game::sendNextRoundInfo(){
+    Message m = Message(NEXTROUND, activeVoting->getVotingId(), std::to_string(currentTeam), std::to_string(activeVoting->getEndTime()));
+    sendToAllPlayers(m);
+}
+
+void Game::sendToAllPlayers(Message &message){
+    for(auto team : teams){
+        for(auto player : team){
+            player.sendMessage(message);
+        }
+    }
 }
 
 Player* Game::join(int team){
