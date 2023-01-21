@@ -31,7 +31,9 @@ private:
     bool validateTime(long time);
     bool validatePlayer(std::string playerId);
     bool validateIfVotedOnce(std::string playerId);
-    bool validate(Vote& vote);
+
+protected:
+    virtual bool validate(Vote& vote);
 
 public:
     Voting(std::string gameId, std::list<Player>* allowedPlayers, long duration);

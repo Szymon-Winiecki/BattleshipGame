@@ -16,6 +16,13 @@ int Map::getSize(){
     return map.size();
 }
 
+FieldStatus Map::getStatus(int x, int y){
+    if(!validCoords(x, y)){
+        return FieldStatus::INVALID_FIELD;
+    }
+    return map[x][y];
+}
+
 FieldStatus Map::shoot(int x, int y){
     if(!validCoords(x, y)){
         return FieldStatus::INVALID_FIELD;

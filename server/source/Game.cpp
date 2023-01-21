@@ -75,6 +75,17 @@ void Game::sendToAllPlayers(Message &message){
     }
 }
 
+void Game::shoot(int map, int x, int y){
+    assertTeam(map);
+    FieldStatus status = maps[map].shoot(x, y);
+    if(status == FieldStatus::SUNK){
+        //wysłać całą mapę, bo zmienia się nie tylko ostrzeliwywane pole
+    }
+    else{
+        //wysłać tylko status ostrzelanego pola
+    }
+}
+
 Player* Game::join(int team){
     if(!isOpen){
         return NULL;

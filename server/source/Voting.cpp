@@ -57,10 +57,10 @@ std::string Voting::getVotingId(){
 }
 
 bool Voting::validate(Vote& vote){
-    if(!this->validateVoting(vote.getVotingId())) return false;
-    if(!this->validateGame(vote.getGameId())) return false;
-    if(!this->validateTime(vote.getTime())) return false;
-    if(!this->validatePlayer(vote.getPlayerId())) return false;
+    if(!validateVoting(vote.getVotingId())) return false;
+    if(!validateGame(vote.getGameId())) return false;
+    if(!validateTime(vote.getTime())) return false;
+    if(!validatePlayer(vote.getPlayerId())) return false;
     if(!validateIfVotedOnce(vote.getPlayerId())) return false;
     return true;
 }

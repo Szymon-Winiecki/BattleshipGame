@@ -26,6 +26,9 @@ public:
     /*  zwraca rozmiar planszy (szerokosc, ale plansza jest kwadratowa wiec rowniez dlugosc)*/
     int getSize();
 
+    /*  zwraca status pola o podanych koordyantach*/
+    FieldStatus getStatus(int x, int y);
+
     /*  strzal w pole [x,y]. Wykonywana jest odpowiednia akcja w zaleznosci od typu pola w jakie trafiono.
         Zwracany jest stan trafionego pola po wykonaniu akcji. Jezeli pole jest poza plansza zwaracana jest warotsc FieldStatus::INVALID_FIELD*/
     FieldStatus shoot(int x, int y);

@@ -41,6 +41,9 @@ private:
 
     void sendResult(std::string &result);
     void sendNextRoundInfo();
+    
+    void shoot(int map, int x, int y);
+
     void sendToAllPlayers(Message &message);
     void assertTeam(int team);
 public:
