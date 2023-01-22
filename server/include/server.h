@@ -25,9 +25,6 @@
 
 void ctrl_c(int);
 
-void sendToAllBut(int fd, char * buffer, int count); //do usuniecia
-void sendToAll(char * buffer, int count); //do usuniecia
-void sendToAllButInGame(int fd, Message* message);
 uint16_t readPort(char * txt);
 
 void setReuseAddr(int sock);

@@ -65,6 +65,7 @@ public:
     void changeTeam(int team,Player* player);
     void leave(int team,Player* player);
     bool vote(Vote &vote);
+    int getNumberOfPlayers();
 
     std::string getId();
     long getStartTime();

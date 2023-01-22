@@ -143,15 +143,24 @@ bool Game::vote(Vote &vote){
 
 void Game::leave(int team, Player* player){
     teams[team].remove(*player);
+    Message message1 = Message(PLAYERLEFT,player->getGame()->getId(),player->getId(),std::to_string(player->getTeamId()));
+    sendToAllPlayers(message1); 
 }
 
 void Game::changeTeam(int team, Player* player){
     this->leave(1-team, player);
     player->setTeamId(team);
     teams[team].push_front(*player);
+    Message message1 = Message(CHANGETEAM,player->getGame()->getId(),player->getId(),std::to_string(player->getTeamId()));
+    sendToAllPlayers(message1);                
+
 }
 
 std::string Game::getSerializedMap(int team, bool showShips){
     assertTeam(team);
     return maps[team].print(!showShips, ' ');
+}
+
+int Game::getNumberOfPlayers(){
+    return getTeam(0)->size() + getTeam(1)->size();
 }
