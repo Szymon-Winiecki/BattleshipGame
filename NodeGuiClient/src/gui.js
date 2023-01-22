@@ -1,163 +1,70 @@
 const { QLabel, FlexLayout, QWidget, QMainWindow, QLineEdit, QPushButton } = require("@nodegui/nodegui");
-const GuiBoard = require("./GuiWidgets/guiBoard");
+
+const GuiBoard = require("./GuiWidgets/boardWidget");
+const GuiRoundTimer = require("./GuiWidgets/roundTimerWidget");
+const ConnectionScreen = require("./GuiWidgets/connectionScreen");
+const MenuScreen = require("./GuiWidgets/menuScreen");
+
 const Board = require("./board");
 const connection = require("./connection");
-
+const GameScreen = require("./GuiWidgets/gameScreen");
 const Message = require("./message").Message;
 const MessageType = require("./message").MessageType;
 
-function initWindow(){
-  const win = new QMainWindow();
-  win.setWindowTitle('Battleship');
-  win.resize(800, 600);
 
-  win.show();
-  global.win = win;
+class Gui{
+    #win;
 
-  showConnectionConfiguration();
+    constructor(){
+        this.init();
+    }
+
+    //tworzy puste okno
+    init(){
+        this.#win = new QMainWindow();
+        this.#win.setWindowTitle('Battleship');
+        this.#win.resize(800, 600);
+
+        this.#win.show();
+    }
+
+    /* wyświetla ekran z formularzem połączenia do serwera
+     * argumenty:
+     *  onConnectCallback - funkcja która ma zostać wywołana po kliknięciu przycisku 'połącz', powinna przyjmować dwa argumenty: adres i port
+     * zwraca obeikt typu ConnectionScreen
+     */
+    showConnectScreen(onConnectCallback){
+        const screen = new ConnectionScreen(onConnectCallback);
+        this.#win.setCentralWidget(screen.getWidget());
+        return screen;
+    }
+
+    /* wyświetla ekran menu z którego można stworzyć grę, dołączyć do gry, albo wyjść z aplikacji
+     * argumenty:
+     *  onCreateCallback - funkcja do wywołania po kliknięciu w przycisk 'nowa gra', nie powinna przyjmować argumentów
+     *  onJoinCallback - funkcja do wywołania po kliknięciu w przycisk 'dołącz do gry', powinna przyjmować jeden argument - id gry
+     *  onChangeServerCallback - funkcja do wywołania po kliknięciu w przycisk 'zmień serwer', nie powinna przyjmować argumentów
+     *  onExitCallback - funkcja do wywołania po kliknięciu w przycisk 'wyjdź', nie powinna przyjmować argumentów
+     * zwraca obeikt typu MenuScreen
+     */
+    showMenuScreen(onCreateCallback, onJoinCallback, onChangeServerCallback, onExitCallback){
+        const screen = new MenuScreen(onCreateCallback, onJoinCallback, onChangeServerCallback, onExitCallback);
+        this.#win.setCentralWidget(screen.getWidget());
+        return screen;
+    }
+
+    /* wyświetla ekran gry
+     * argumenty:
+     *  gameId - id gry
+     *  onVoteCallabck - funkcja do wywołania po kliknięciu w przycisk 'zagłosuj', powinna przyjmować dwa argumenty: x i y pola
+     *  onExitCallback - funkcja do wywołania po kliknięciu w przycisk 'opuść rozgrywkę', nie powinna przyjmować argumentów
+     * zwraca obeikt typu GameScreen
+     */
+    showGameScreen(gameId, onVoteCallabck, onExitCallback){
+        const screen = new GameScreen(gameId, onVoteCallabck, onExitCallback)
+        this.#win.setCentralWidget(screen.getWidget());
+        return screen;
+    }
 }
 
-function showConnectionConfiguration(){
-
-  //root view
-  const rootView = new QWidget();
-  const rootViewLayout = new FlexLayout();
-  rootView.setLayout(rootViewLayout);
-  rootView.setObjectName("rootView");
-
-  //connection configuration layout
-
-  const connConfWidget = new QWidget();
-  const connConfLayout = new FlexLayout();
-  connConfWidget.setLayout(connConfLayout);
-  connConfWidget.setObjectName("connConf");
-
-  const addrInputRow = new QWidget();
-  const addrInputRowLayout = new FlexLayout();
-  addrInputRow.setLayout(addrInputRowLayout);
-  addrInputRow.setObjectName("addrInputRow");
-
-  const portInputRow = new QWidget();
-  const portInputRowLayout = new FlexLayout();
-  portInputRow.setLayout(portInputRowLayout);
-  portInputRow.setObjectName("portInputRow");
-
-
-  //connection configurtation widgtes
-
-  const connConfTitleLabel = new QLabel();
-  connConfTitleLabel.setText("Połącz z serwerem")
-
-  const addrInputLabel = new QLabel();
-  addrInputLabel.setText("adres: ");
-  addrInputLabel.setObjectName("addrInputLabel");
-
-  const addrInput = new QLineEdit();
-  addrInput.setObjectName("addrInput");
-  addrInput.setText('127.0.0.1');
-
-  const portInputLabel = new QLabel();
-  portInputLabel.setText("port:  ");
-  portInputLabel.setObjectName("portInputLabel");
-
-  const portInput = new QLineEdit();
-  portInput.setObjectName("portInput");
-  portInput.setText("1234");
-
-  const connectButton = new QPushButton();
-  connectButton.setText("Połącz");
-  connectButton.setObjectName("connectButton");
-
-  const loadingLabel = new QLabel();
-  loadingLabel.setText("");
-  loadingLabel.setObjectName("loadingLabel");
-
-  //add widgets to layouts
-
-  rootViewLayout.addWidget(connConfWidget);
-
-  connConfLayout.addWidget(connConfTitleLabel);
-  connConfLayout.addWidget(addrInputRow);
-  connConfLayout.addWidget(portInputRow);
-
-  addrInputRowLayout.addWidget(addrInputLabel);
-  addrInputRowLayout.addWidget(addrInput);
-
-  portInputRowLayout.addWidget(portInputLabel);
-  portInputRowLayout.addWidget(portInput);
-
-  connConfLayout.addWidget(connectButton);
-  connConfLayout.addWidget(loadingLabel);
-
-  //events
-
-  connectButton.addEventListener('clicked', () => {
-    const addr = addrInput.text();
-    const port = parseInt(portInput.text());
-    connection.connect(addr, port, () => {
-        showBoard();
-    });
-    loadingLabel.setText("Łączenie...");
-  });
-
-  //styling
-
-  rootView.setStyleSheet(`
-    #rootView {
-      width: 100%;
-      align-items: 'center';
-      justify-content: 'center';
-      padding: 5px;
-    }
-    #addrInputRow, #portInputRow {
-      flex-direction: 'row';
-    }
-    #connectButton {
-      width: 120px;
-    }
-  `);
-
-  win.setCentralWidget(rootView);
-}
-
-function showBoard(){
-  const rootView = new QWidget();
-  const rootViewLayout = new FlexLayout();
-  rootView.setLayout(rootViewLayout);
-  rootView.setObjectName("rootView");
-
-  const gameLabel = new QLabel();
-  gameLabel.setObjectName("gameLabel");
-  gameLabel.setText("Gra w statki");
-
-  function onClick(x, y){
-    console.log("[" + x + ",  " + y + "]");
-  }
-
-  const board = Board.decode("6|001000001010203010020000000440000020");
-  const guiBoard = new GuiBoard(board);
-  guiBoard.setFieldSize(40);
-  guiBoard.setOnClick(onClick);
-  const boardView = guiBoard.getWidget();
-  
-  rootViewLayout.addWidget(gameLabel);
-  rootViewLayout.addWidget(boardView);
-
-  rootView.setStyleSheet(`
-    #rootView {
-      width: 100%;
-      align-items: 'center';
-      justify-content: 'space-around';
-      padding: 5px;
-    }
-    #gameLabel{
-      font-size: 20px;
-    }
-  `);
-
-  win.setCentralWidget(rootView);
-}
-
-module.exports = {
-    initWindow
-}
+module.exports = Gui;

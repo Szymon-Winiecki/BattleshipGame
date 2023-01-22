@@ -3,10 +3,10 @@ const GuiWidget = require("./guiWidget");
 const Board = require("../board");
 
 
-class GuiBoard extends GuiWidget{
+class BoardWidget extends GuiWidget{
 
   //properties
-  #fieldSize = 20;
+  #fieldSize = 40;
 
   //
   #board;
@@ -22,10 +22,10 @@ class GuiBoard extends GuiWidget{
 
 
   // board - obiekt klasy Board reprezentujacy planszę do wyświetlenia, interactive - czy można na niej głosować (tylko na planszy przeciwnika można głosować)
-  constructor(board, interactive){
+  constructor(interactive){
     super();
 
-    this.#board = board;
+    this.#board = new Board();
     this.#interactive = interactive;
 
     this.#boardView = new QWidget();
@@ -33,24 +33,6 @@ class GuiBoard extends GuiWidget{
     this.#boardView.setLayout(this.#boardViewLayout);
     this.#boardView.setObjectName("boardView");
 
-    this.#fieldsWidgets = new Array(board.getSize());
-        for(let i = 0; i < board.getSize(); ++i){
-          this.#fieldsWidgets[i] = new Array(board.getSize());
-    }
-
-    for(let i = 0; i < board.getSize(); ++i){
-      for(let j = 0; j < board.getSize(); ++j){
-        this.#fieldsWidgets[j][i] = new QPushButton();
-        this.#boardViewLayout.addWidget(this.#fieldsWidgets[j][i]);
-        this.#fieldsWidgets[j][i].addEventListener("clicked", () => {
-          if(this.#interactive && this.#fieldsWidgets[j][i].property('class') == 'clear'){ //można zagłosować tylko na pola typu 'clear' na planysz przeciwnika, więc tylko te będą uruchamiały event
-            this.#onClick(j, i);
-          }
-        });
-      }
-    }
-
-    this.updateFields();
     this.updateStyle();
   }
 
@@ -77,6 +59,8 @@ class GuiBoard extends GuiWidget{
         }
       }
     }
+
+    this.updateStyle();
   }
 
   updateStyle(){
@@ -113,6 +97,29 @@ class GuiBoard extends GuiWidget{
   `);
   }
 
+  setBoard(board){
+    this.#board = board;
+
+    this.#fieldsWidgets = new Array(board.getSize());
+        for(let i = 0; i < board.getSize(); ++i){
+          this.#fieldsWidgets[i] = new Array(board.getSize());
+    }
+
+    for(let i = 0; i < board.getSize(); ++i){
+      for(let j = 0; j < board.getSize(); ++j){
+        this.#fieldsWidgets[j][i] = new QPushButton();
+        this.#boardViewLayout.addWidget(this.#fieldsWidgets[j][i]);
+        this.#fieldsWidgets[j][i].addEventListener("clicked", () => {
+          if(this.#interactive && this.#fieldsWidgets[j][i].property('class') == 'clear'){ //można zagłosować tylko na pola typu 'clear' na planysz przeciwnika, więc tylko te będą uruchamiały event
+            this.#onClick(j, i);
+          }
+        });
+      }
+    }
+
+    this.updateFields();
+  }
+
   // ustawia rozmiar (szerokość i wysokość) pojedynczego pola w px
   setFieldSize(size){
     this.#fieldSize = size;
@@ -130,4 +137,4 @@ class GuiBoard extends GuiWidget{
 
 }
 
-module.exports = GuiBoard;
+module.exports = BoardWidget;

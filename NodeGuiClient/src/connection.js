@@ -170,6 +170,12 @@ client.on('data', function(data) {
       case MessageType.GETMAP: 
         console.log(message.getParam1());
       break;
+      case MessageType.VOTERESULT:
+        //votingid|team|result
+      break;
+      case MessageType.NEXTROUND:
+        //votingid|team|endTime
+      break;
       default:
         console.log("incorrect message, albo jeszcze nie ustawiona\n");
       break;

@@ -32,7 +32,7 @@ class Board{
     #fields;
     #size;
 
-    constructor(fields){
+    constructor(fields = [[]]){
         this.#size = fields.length;
         this.#fields = fields;
     }
