@@ -3,6 +3,9 @@ const GuiBoard = require("./GuiWidgets/guiBoard");
 const Board = require("./board");
 const connection = require("./connection");
 
+const Message = require("./message").Message;
+const MessageType = require("./message").MessageType;
+
 function initWindow(){
   const win = new QMainWindow();
   win.setWindowTitle('Battleship');
