@@ -64,7 +64,7 @@ void Client::handleEvent(uint32_t events){
     if(events & EPOLLIN) {
         char buffer[256]{};
         char buffd[10]{};
-        sprintf(buffd,"%d: ", _fd);
+        sprintf(buffd,"%d: ", _fd); //todo: wyslac fd jako wiadomosc
         ssize_t count = read(_fd, buffer, 256);
         int i{0};
         while(count>i){ //ret - liczba odczytanych znakow przez funkcje read(), i - liczba znakow jakie juz zapisalismy
@@ -150,7 +150,9 @@ void Client::readm(uint32_t events){
 
 void Client::remove() {
     printf("removing %d\n", _fd);
-    this->getPlayer()->getGame()->leave(this->getPlayer()->getTeamId(),this->getPlayer());
+    if (this->player != nullptr) {
+        this->getPlayer()->getGame()->leave(this->getPlayer()->getTeamId(), this->getPlayer());
+    }
     clients.erase(this);
     delete this;
 }
