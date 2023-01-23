@@ -23,7 +23,7 @@ class Gui{
     init(){
         this.#win = new QMainWindow();
         this.#win.setWindowTitle('Battleship');
-        this.#win.resize(800, 600);
+        this.#win.resize(1000, 600);
 
         this.#win.show();
     }

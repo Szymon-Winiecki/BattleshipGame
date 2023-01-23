@@ -50,6 +50,9 @@ function showGameScreen(gameId, addr, port){
   const board1 = Board.decode("6|001000001010203010020000000440000020");
   const board2 = Board.decode("6|002000000000203000020003000440000020");
 
+  const team1 = ['gracz1', 'gracz2', 'gracz6'];
+  const team2 = ['gracz3', 'gracz4'];
+
   const gameScreen = gui.showGameScreen(
     gameId,
 
@@ -72,4 +75,7 @@ function showGameScreen(gameId, addr, port){
 
   gameScreen.serverStatusWidget.setStatus(true);
   gameScreen.serverStatusWidget.setAddress(addr, port);
+
+  gameScreen.playerTeamList.setList(team1);
+  gameScreen.opponentTeamList.setList(team2);
 }

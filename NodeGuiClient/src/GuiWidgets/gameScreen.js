@@ -5,6 +5,8 @@ const guiLayout = require("./guiLayout");
 const ServerStatusWidget = require("./serverStatusWidget");
 const RoundTimerWidget = require("./roundTimerWidget");
 const BoardWidget = require("./boardWidget");
+const PlayersListWidget = require("./playersListWidget");
+const { timingSafeEqual } = require("crypto");
 
 class GameScreen extends GuiScreen{
     #rootView;
@@ -12,6 +14,8 @@ class GameScreen extends GuiScreen{
     roundTimerWidget;
     playerBoardWidget;
     opponentBoardWidget;
+    playerTeamList;
+    opponentTeamList;
 
     #onVoteCallabck;
     #onExitCallback;
@@ -38,6 +42,7 @@ class GameScreen extends GuiScreen{
         const [mainRow, mainRowLayout] = guiLayout.Row("mainRow");
         const [yourBoardCol, yourBoardColLayout] = guiLayout.Column("boardRow");
         const [opponentBoardCol, opponentBoardColLayout] = guiLayout.Column("boardRow");
+        const [teamsRow, teamsRowLayout] = guiLayout.Row("teams");
     
         
         //widgets
@@ -61,8 +66,12 @@ class GameScreen extends GuiScreen{
 
         this.opponentBoardWidget = new BoardWidget(true);
         
+        this.playerTeamList = new PlayersListWidget();
+        this.playerTeamList.setTitle("twoja drużyna");
 
-        //tutaj zrobić listę graczy
+        this.opponentTeamList = new PlayersListWidget();
+        this.opponentTeamList.setTitle("przeciwnicy");
+        
 
         const exitButton = new QPushButton();
         exitButton.setText("wyjdź z gry");
@@ -82,12 +91,16 @@ class GameScreen extends GuiScreen{
 
         mainRowLayout.addWidget(yourBoardCol);
         mainRowLayout.addWidget(opponentBoardCol);
+        mainRowLayout.addWidget(teamsRow);
 
         yourBoardColLayout.addWidget(yourBoardLabel);
         yourBoardColLayout.addWidget(this.playerBoardWidget.getWidget());
 
         opponentBoardColLayout.addWidget(opponentBoardLabel);
         opponentBoardColLayout.addWidget(this.opponentBoardWidget.getWidget());
+
+        teamsRowLayout.addWidget(this.playerTeamList.getWidget());
+        teamsRowLayout.addWidget(this.opponentTeamList.getWidget());
 
         //events
 
@@ -105,7 +118,7 @@ class GameScreen extends GuiScreen{
         }
         #game{
             height: '90%';
-            width: '70%';
+            width: '90%';
             align-items: 'center';
             justify-content: 'space-around';
         }
