@@ -26,7 +26,7 @@ class Client{
 
         this.#game = new Game();
         this.#player = new Player();
-
+   
         this.#gui.showConnectScreen((addr, port) => { this.#connectToServer(addr, port); });
     }
 
@@ -100,8 +100,15 @@ class Client{
             case MessageType.CREATE: 
       
               console.log("Udalo sie stworzyc gre o id: "+message.getObjectId());
-              this.#onGameJoined(message.getObjectId(), message.getParam1(), parseInt(message.getParam2()))
-      
+              //dodanie informacji z serwera o graczu do klasy
+              this.#player.setGameId(message.getObjectId());
+              this.#player.setPlayerid(message.getParam1());
+              this.#player.setTeamId(parseInt(message.getParam2()));
+              this.#player.addPlayerToTeam(message.getParam2(),this.#player.getPlayerid());
+
+              this.#onGameJoined(message.getObjectId(), message.getParam1(), parseInt(message.getParam2()));
+              this.#updatePlayersList(0, this.#player.getTeam(0));
+              this.#updatePlayersList(1, this.#player.getTeam(1));
             break;
 
             /*
@@ -114,7 +121,11 @@ class Client{
             case MessageType.JOIN:
       
               console.log("dolaczono do gry "+message.getObjectId());
-              this.#onGameJoined(message.getObjectId(), message.getParam1(), parseInt(message.getParam2()))
+              //dodanie informacji z serwera o graczu do klasy
+              this.#player.setGameId(message.getObjectId());
+              this.#player.setPlayerid(message.getParam1());
+              this.#player.setTeamId(parseInt(message.getParam2()));
+              this.#onGameJoined(message.getObjectId(), message.getParam1(), parseInt(message.getParam2()));
               
             break;
 
@@ -128,8 +139,20 @@ class Client{
             */
             case MessageType.SHOWTEAMS: //przesyla po kolei druzyne 0 i potem 1
       
-                console.log(message.getParam1());
-                console.log(message.getParam2());
+             console.log(message.getParam1());
+             console.log(message.getParam2());
+             //umieszczamy id graczy w liscie, mozliwe ze da sie to prosciej
+             var players = message.getParam2().split(' '); 
+             players.pop(); //usuniecie ostatniego bo pusty przez split
+
+             //dodajemy tych graczy do player.teams
+             if(players.length>0){
+                for(let i=0;i<players.length;i++){
+                    this.#player.addPlayerToTeam(parseInt(message.getParam1()),players[i]);
+                }
+             }
+             this.#updatePlayersList(0, this.#player.getTeam(0));
+             this.#updatePlayersList(1, this.#player.getTeam(1));
             break;
 
              /*
@@ -139,6 +162,7 @@ class Client{
             */
             case MessageType.LEAVE: 
               console.log(message.getParam1());
+              this.#player.clear();
               
             break;
 
@@ -151,7 +175,10 @@ class Client{
             */
             case MessageType.PLAYERLEFT:
               console.log("Gracz "+message.getParam1()+" opuscil gre");
-
+              //usuniecie gracza z druzyny
+              this.#player.removePlayerFromTeam(parseInt(message.getParam2()),message.getParam1());
+              //update listy graczy w gui gry
+              this.#updatePlayersList(message.getParam2(), this.#player.getTeam(message.getParam2()));
             break;
 
             /*
@@ -163,17 +190,27 @@ class Client{
             */
             case MessageType.PLAYERJOINED: 
               console.log("Gracz "+message.getParam1()+" dolaczyl do gry");
+              //dodanie gracza do druzyny
+              this.#player.addPlayerToTeam(parseInt(message.getParam2()),message.getParam1());
+              //update listy graczy w gui gry
+              this.#updatePlayersList(message.getParam2(), this.#player.getTeam(message.getParam2()));
             break;
 
              /*
-            MessageType.CHANGETEAM - informuje o zmianie druzyny jakiegos gracza (jeszcze nie przetestowane)
+            MessageType.CHANGETEAM - informuje o zmianie druzyny jakiegos gracza 
             Dostajemy informacje o:
              ID gracza                    (param1) 
              ID druzyny na jaka zmieniamy (param2)
              ID gry                       (objecttype)
             */
-            case MessageType.CHANGETEAM: //nie dziala bo nie dziala removePlayerFromTeam
-              
+            case MessageType.CHANGETEAM: 
+            //usuniecie gracza z jednej druzyny
+            this.#player.removePlayerFromTeam(1-parseInt(message.getParam2()),message.getParam1());
+            //dodanie gracza do drugiej druzyny
+            this.#player.addPlayerToTeam(parseInt(message.getParam2()),message.getParam1());
+            //update list graczy w gui gry
+            this.#updatePlayersList(message.getParam2(), this.#player.getTeam(message.getParam2()));
+            this.#updatePlayersList(1-message.getParam2(), this.#player.getTeam(1-message.getParam2()));
             break;
 
             /*
@@ -238,6 +275,9 @@ class Client{
     /*
      * Metody wywoływane przez wiadomości
      */
+
+    
+
 
     #onGameJoined(gameId, playerId, team){
         this.#game.gameId = gameId;
