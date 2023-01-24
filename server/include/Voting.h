@@ -8,7 +8,6 @@
 #include <unordered_set>
 
 #include "./Vote.h"
-#include "./Player.h"
 
 class Player;
 

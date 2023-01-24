@@ -98,7 +98,7 @@ class RoundTimerWidget extends GuiWidget{
   updateStyle(){
     this.#roundTimerView.setStyleSheet(`
     #roundTimerView {
-      width: 200px;
+      width: 300px;
       align-items: 'center';
       justify-content: 'space-around';
       padding: 5px;

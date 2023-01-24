@@ -15,7 +15,11 @@ const MessageType = {
   GETMAP: 11,
   SERVERERROR: 12,
   PLAYERERROR: 13,
-  SENDFD: 14
+  SENDFD: 14,
+  VOTERESULT: 15,
+  NEXTROUND: 16,
+  UPDATEMAP: 17,
+  GETROUND: 18
 };
 
 
@@ -32,7 +36,7 @@ class Message {
       this.#param2 = param2 || "";
     }
   
-    decode(message, separator = '|') {
+    static decode(message, separator = '|') {
       let decoded = new Message();
       let encoded = message.split(separator);
       decoded.#type = encoded[0];

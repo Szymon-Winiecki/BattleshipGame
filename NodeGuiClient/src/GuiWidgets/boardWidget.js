@@ -97,20 +97,34 @@ class BoardWidget extends GuiWidget{
   `);
   }
 
-  setBoard(board){
-    this.#board = board;
+  setInteractive(interactive){
+    this.#interactive = interactive;
 
-    this.#fieldsWidgets = new Array(board.getSize());
-        for(let i = 0; i < board.getSize(); ++i){
-          this.#fieldsWidgets[i] = new Array(board.getSize());
+    this.updateStyle();
+  }
+
+  setBoard(board){
+
+    //usuń poprzednie pola
+    this.#boardViewLayout.delete();
+    this.#boardViewLayout = new FlexLayout();
+    this.#boardView.setLayout(this.#boardViewLayout);
+
+    if(this.#board === undefined || this.#fieldsWidgets === undefined || this.#board.length != board.length){
+      this.#fieldsWidgets = new Array(board.getSize());
+      for(let i = 0; i < board.getSize(); ++i){
+        this.#fieldsWidgets[i] = new Array(board.getSize());
+      }
     }
+
+    this.#board = board;
 
     for(let i = 0; i < board.getSize(); ++i){
       for(let j = 0; j < board.getSize(); ++j){
         this.#fieldsWidgets[j][i] = new QPushButton();
         this.#boardViewLayout.addWidget(this.#fieldsWidgets[j][i]);
         this.#fieldsWidgets[j][i].addEventListener("clicked", () => {
-          if(this.#interactive && this.#fieldsWidgets[j][i].property('class') == 'clear'){ //można zagłosować tylko na pola typu 'clear' na planysz przeciwnika, więc tylko te będą uruchamiały event
+          if(this.#interactive && this.#fieldsWidgets[j][i].property('class') == 'clear'){ //można zagłosować tylko na pola typu 'clear' na planszy przeciwnika, więc tylko te będą uruchamiały event
             this.#onClick(j, i);
           }
         });

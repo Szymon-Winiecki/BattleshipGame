@@ -1,4 +1,5 @@
 #include "../include/Voting.h"
+#include "./Player.h"
 
 long Voting::nextId = 1;
 

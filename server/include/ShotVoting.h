@@ -5,8 +5,9 @@
 #include "./Voting.h"
 #include "./Map.h"
 
-class ShotVoting : public Voting
-{
+class Map;
+
+class ShotVoting : public Voting {
 private:
     Map* map;
 

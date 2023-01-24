@@ -32,5 +32,9 @@ bool ShotVoting::validate(Vote& vote){
 }
 
 std::vector<int> ShotVoting::getDecodedResult(){
-    return decodeVote(Voting::getResult(), '|');
+    std::string result = Voting::getResult();
+    if(result == ""){
+        result = "0&0";
+    }
+    return decodeVote(result, '&');
 }

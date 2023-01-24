@@ -2,10 +2,13 @@ const Gui = require("./gui");
 const RoundTimerWidget = require("./GuiWidgets/roundTimerWidget");
 const Board = require("./board");
 const connection = require("./connection");
+const Client = require("./client");
 const Message = require("./message").Message;
 const MessageType = require("./message").MessageType;
 
-const gui = new Gui();
+const client = new Client();
+
+/*const gui = new Gui();
 
 showConnectScreen();
 
@@ -78,4 +81,4 @@ function showGameScreen(gameId, addr, port){
 
   gameScreen.playerTeamList.setList(team1);
   gameScreen.opponentTeamList.setList(team2);
-}
+}*/

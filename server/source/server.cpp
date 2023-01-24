@@ -117,11 +117,19 @@ void Client::handleEvent(uint32_t events){
                     }
                     bool showShips = false;
                     if(getPlayer()->getTeamId() == team) showShips = true;
-                    Message message = Message(MessageType::GETMAP, getPlayer()->getGame()->getSerializedMap(team, showShips));
+                    Message message = Message(MessageType::GETMAP, std::to_string(team), getPlayer()->getGame()->getSerializedMap(team, showShips), "");
                     this->writem(message);
                 break;}
                 case SHOWTEAMS:{
                     this->showPlayers();
+                break;}
+                case VOTE:
+                    std::cout << message.encode() << std::endl;
+                    this->getPlayer()->vote(message.getObjectId(), message.getParam1());
+                break;
+                case GETROUND:{
+                    Message m = getPlayer()->getGame()->currentRoundInfo();
+                    getPlayer()->sendMessage(m);
                 break;}
                 default:
                     events |= EPOLLERR;

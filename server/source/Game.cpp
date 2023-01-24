@@ -10,7 +10,7 @@ std::string Game::generateId(){
 Game::Game() :
     gameId { generateId() },
     maxPlayers { 2 },
-    roundDuration {5 * 1000}, // 5s
+    roundDuration {10 * 1000}, // 10s
     maps { Map(6), Map(6)},
     isOpen { false },
     started { false },
@@ -53,10 +53,12 @@ void Game::nextRound(){
     if(activeVoting != NULL){
         std::string result = activeVoting->getResult();
         sendResult(result);
+        std::vector<int> fieldToShot = activeVoting->getDecodedResult();
+        shoot(1 - currentTeam, fieldToShot[0], fieldToShot[1]);
     }
     delete activeVoting;
     currentTeam = 1 - currentTeam;
-    activeVoting = new Voting(getId(), getTeam(currentTeam), roundDuration);
+    activeVoting = new ShotVoting(getId(), getTeam(currentTeam), roundDuration, &maps[1 - currentTeam]);
     sendNextRoundInfo();
 
     runRoundController();
@@ -95,11 +97,15 @@ void Game::sendToAllPlayers(Message &message){
 void Game::shoot(int map, int x, int y){
     assertTeam(map);
     FieldStatus status = maps[map].shoot(x, y);
-    if(status == FieldStatus::SUNK){
-        //wysłać całą mapę, bo zmienia się nie tylko ostrzeliwywane pole
+    if(status == FieldStatus::SUNK){ //zatopiony - mogło zmienić się więcej niż jedno pole - wysyłamy całą mapę
+        Message m1 = Message(GETMAP, std::to_string(map), getSerializedMap(map, true), ""); //mapa z pokazanymi statkami
+        sendToTeam(m1, map);
+        Message m2 = Message(GETMAP, std::to_string(map), getSerializedMap(map, false), ""); //mapa bez statków
+        sendToTeam(m2, 1 - map);
     }
-    else{
-        //wysłać tylko status ostrzelanego pola
+    else{ //zmieniło się tylko jedno pole, więc tylko je wysyłamy
+        Message m = Message(UPDATEMAP, std::to_string(map), (std::to_string(x) + "&" + std::to_string(y)), std::to_string(static_cast<int>(status)));
+        sendToAllPlayers(m);
     }
 }
 
@@ -158,9 +164,13 @@ void Game::changeTeam(int team, Player* player){
 
 std::string Game::getSerializedMap(int team, bool showShips){
     assertTeam(team);
-    return maps[team].print(!showShips, ' ');
+    return maps[team].serialize(!showShips, '&');
 }
 
 int Game::getNumberOfPlayers(){
     return getTeam(0)->size() + getTeam(1)->size();
+}
+
+Message Game::currentRoundInfo(){
+    return Message(NEXTROUND, activeVoting->getVotingId(), std::to_string(currentTeam), std::to_string(activeVoting->getEndTime()));
 }

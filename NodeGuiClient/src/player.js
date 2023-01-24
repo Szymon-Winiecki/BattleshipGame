@@ -1,7 +1,11 @@
 
+class Player{
+    #playerId;
+    #team;
+}
 
 
-class Player {
+class PlayerK {
     #fd
     #playerId;
     #team;
@@ -73,8 +77,10 @@ class Player {
 };
 
 
-let player = new Player();
+/*let player = new Player();
 
 module.exports = {
     player
-}
+}*/
+
+module.exports = Player;

@@ -10,10 +10,10 @@ class Board{
         INVALID_FIELD: 5   //nieprawidlowe pole
     };
 
-    static decode(encodedMap){
-        const separator = encodedMap.indexOf('|');
-        const size = parseInt(encodedMap.substring(0, separator));
-        encodedMap = encodedMap.substring(separator + 1);
+    static decode(encodedMap, separator = '&'){
+        const separatorIndex = encodedMap.indexOf(separator);
+        const size = parseInt(encodedMap.substring(0, separatorIndex));
+        encodedMap = encodedMap.substring(separatorIndex + 1);
 
         let fields = new Array(size);
         for(let i = 0; i < size; ++i){

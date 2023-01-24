@@ -12,6 +12,7 @@
 #include "./Player.h"
 #include "./Client.h"
 #include "./Voting.h"
+#include "./ShotVoting.h"
 #include "./Vote.h"
 #include "./Map.h"
 #include "./Message.h"
@@ -19,6 +20,7 @@
 
 class Player;
 class Voting;
+class ShotVoting;
 
 class Game{
 private:
@@ -37,7 +39,7 @@ private:
     bool isOpen;
     bool started;
     int currentTeam;
-    Voting* activeVoting;
+    ShotVoting* activeVoting;
 
     void sendResult(std::string &result);
     void sendNextRoundInfo();
@@ -72,4 +74,6 @@ public:
 
     std::list<Player>* getTeam(int team);
     std::string getSerializedMap(int team, bool showShips);
+
+    Message currentRoundInfo();
 };
