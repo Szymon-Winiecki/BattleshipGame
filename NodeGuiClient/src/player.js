@@ -76,11 +76,4 @@ class PlayerK {
 
 };
 
-
-/*let player = new Player();
-
-module.exports = {
-    player
-}*/
-
-module.exports = Player;
+module.exports = PlayerK;
