@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <sstream>
 #include <list>
 #include <sstream>
 #include <stdexcept>
@@ -46,6 +47,10 @@ private:
     
     void shoot(int map, int x, int y);
 
+    void sendCurrentTeams();
+
+    std::string serializeTeam(int team, char separator);
+
     void sendToTeam(Message &message, int team);
     void sendToAllPlayers(Message &message);
     void assertTeam(int team);
@@ -76,4 +81,5 @@ public:
     std::string getSerializedMap(int team, bool showShips);
 
     Message currentRoundInfo();
+    Message currentTeamInfo(int team);
 };

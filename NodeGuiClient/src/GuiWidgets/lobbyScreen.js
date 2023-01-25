@@ -15,18 +15,20 @@ class lobbyScreen extends GuiScreen{
 
 
     #onExitCallback;
-    #onChangeTeamCallback
+    #onChangeTeamCallback;
+    #onStartGameCallback
 
-    constructor(gameId, playerId, onExitCallback, onChangeTeamCallback){
+    constructor(gameId, playerId, isOwner, onExitCallback, onChangeTeamCallback, onStartGameCallback){
         super();
 
         this.#onExitCallback = onExitCallback;
         this.#onChangeTeamCallback = onChangeTeamCallback
+        this.#onStartGameCallback = onStartGameCallback;
 
-        this.#init(gameId,playerId);
+        this.#init(gameId, playerId, isOwner);
     }
 
-    #init(gameId,playerId){
+    #init(gameId, playerId, isOwner){
         //root view
         this.#rootView = new QWidget();
         const rootViewLayout = new FlexLayout();
@@ -38,7 +40,7 @@ class lobbyScreen extends GuiScreen{
         //layout
         const [lobbyView, lobbyViewLayout] = guiLayout.Column("lobby");
         const [statusRow, statusRowLayout] = guiLayout.Row("statusRow");
-        const [mainRow, mainRowLayout] = guiLayout.Row("mainRow");
+        //const [mainRow, mainRowLayout] = guiLayout.Row("mainRow");
         const [teamsRow, teamsRowLayout] = guiLayout.Row("teams");
         const [changeServerRow, changeServerRowLayout] = guiLayout.Row();
     
@@ -56,6 +58,16 @@ class lobbyScreen extends GuiScreen{
         const changeTeamButton = new QPushButton();
         changeTeamButton.setText("zmień druzyne");
 
+        const startButton = new QPushButton();
+
+        if(isOwner){
+            startButton.setText("rozpocznij");
+        }
+        else{
+            startButton.setText("gotowość");
+        }
+        
+
         const exitButton = new QPushButton();
         exitButton.setText("wyjdz do menu");
 
@@ -66,18 +78,17 @@ class lobbyScreen extends GuiScreen{
         this.opponentTeamList.setTitle("Druzyna 2");
 
         this.numberOfReadyPlayersc = new QLabel();
-        playerIdLabel.setText(playerId);
     
         //add widgets to layouts
     
 
-        lobbyViewLayout.addWidget(readyButton);
-        lobbyViewLayout.addWidget(changeTeamButton);
 
         rootViewLayout.addWidget(lobbyView);
 
         lobbyViewLayout.addWidget(statusRow);
         lobbyViewLayout.addWidget(teamsRow);
+        lobbyViewLayout.addWidget(changeTeamButton);
+        lobbyViewLayout.addWidget(startButton);
         lobbyViewLayout.addWidget(exitButton);
 
 
@@ -91,8 +102,9 @@ class lobbyScreen extends GuiScreen{
         //events
 
 
-        exitButton.addEventListener('clicked', this.#onExitCallback());   
-        changeTeamButton.addEventListener('clicked', this.#onChangeTeamCallback());
+        exitButton.addEventListener('clicked', this.#onExitCallback);   
+        changeTeamButton.addEventListener('clicked', this.#onChangeTeamCallback);
+        startButton.addEventListener('clicked', this.#onStartGameCallback);
 
         //styling
     

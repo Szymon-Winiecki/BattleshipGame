@@ -30,6 +30,9 @@ class PlayerK {
     setTeamId(id){
         this.#team=id;
     }
+    setTeam(id, team){
+        this.#teams[id] = team;
+    }
     addPlayerToTeam(id,playerid){
         this.#teams[id].push(playerid);
     }

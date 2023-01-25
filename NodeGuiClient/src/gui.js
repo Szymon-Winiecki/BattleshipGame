@@ -8,6 +8,7 @@ const MenuScreen = require("./GuiWidgets/menuScreen");
 const Board = require("./board");
 const connection = require("./connection");
 const GameScreen = require("./GuiWidgets/gameScreen");
+const lobbyScreen = require("./GuiWidgets/lobbyScreen");
 const Message = require("./message").Message;
 const MessageType = require("./message").MessageType;
 
@@ -49,6 +50,20 @@ class Gui{
      */
     showMenuScreen(onCreateCallback, onJoinCallback, onChangeServerCallback, onExitCallback){
         const screen = new MenuScreen(onCreateCallback, onJoinCallback, onChangeServerCallback, onExitCallback);
+        this.#win.setCentralWidget(screen.getWidget());
+        return screen;
+    }
+
+    /* wyświetla ekran lobby
+     * argumenty:
+     *  gameId - id gry
+     *  onExitCallback - funkcja do wywołania po kliknięciu w przycisk 'opuść rozgrywkę', nie powinna przyjmować argumentów
+     *  onChangeTeamCallback - funkcja do wywołania po kliknięciu w przycisk 'zmień drużynę'
+     *  onStartGameCallback - funkcja do wywołanie po kliknięciu 'rozpocznij' lub 'gotowość'
+     * zwraca obiekt typu LobbyScreen
+     */
+    showLobbyScreen(gameId, playerId, isOwner, onExitCallback, onChangeTeamCallback, onStartGameCallback){
+        const screen = new lobbyScreen(gameId, playerId, isOwner, onExitCallback, onChangeTeamCallback, onStartGameCallback);
         this.#win.setCentralWidget(screen.getWidget());
         return screen;
     }

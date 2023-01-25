@@ -18,6 +18,7 @@ class Client{
 
     #connectionScreen;
     #menuScreen;
+    #lobbyScreen;
     #gameScreen;
 
     constructor(){
@@ -54,6 +55,25 @@ class Client{
 
     #closeApp(){
         console.log('wychodzenie z aplikacji');
+        process.exit(0);
+    }
+
+    #enterGame(){
+        this.#gameScreen = this.#gui.showGameScreen(this.#game.gameId, (x, y) => { this.#onVote(x, y); },  () => { this.#exitGame(); });
+
+        this.#gameScreen.serverStatusWidget.setStatus(true);
+        this.#gameScreen.serverStatusWidget.setAddress(this.#serverAddr, this.#serverPort);
+
+        this.#updatePlayersList(0, this.#game.teams[0]);
+        this.#updatePlayersList(1, this.#game.teams[1]);
+
+        this.#connection.send(new Message(MessageType.GETROUND));
+        this.#connection.send(new Message(MessageType.GETMAP, '', '0', ''));
+        this.#connection.send(new Message(MessageType.GETMAP, '', '1', ''));
+    }
+
+    #changeTeam(){
+        this.#connection.send(new Message(MessageType.CHANGETEAM, '',  1 - this.#player.team));
     }
 
     #onVote(x, y){
@@ -63,6 +83,7 @@ class Client{
     #exitGame(){
         this.#connection.send(new Message(MessageType.LEAVE));
         this.#menuScreen = this.#gui.showMenuScreen(() => { this.#createGame(); },(gameId) => { this.#joinGame(gameId); }, () => { this.#disconnectFromServer(); }, () => { this.#closeApp(); });
+        this.#gameScreen = undefined;
     }
 
     /*
@@ -139,18 +160,17 @@ class Client{
             */
             case MessageType.SHOWTEAMS: //przesyla po kolei druzyne 0 i potem 1
       
-             console.log(message.getParam1());
-             console.log(message.getParam2());
              //umieszczamy id graczy w liscie, mozliwe ze da sie to prosciej
-             var players = message.getParam2().split(' '); 
+             var players = message.getParam2().split('&'); 
              players.pop(); //usuniecie ostatniego bo pusty przez split
-
+            
+             this.#player.setTeam(parseInt(message.getParam1()), players);
              //dodajemy tych graczy do player.teams
-             if(players.length>0){
+             /*if(players.length>0){
                 for(let i=0;i<players.length;i++){
                     this.#player.addPlayerToTeam(parseInt(message.getParam1()),players[i]);
                 }
-             }
+             }*/
              this.#updatePlayersList(0, this.#player.getTeam(0));
              this.#updatePlayersList(1, this.#player.getTeam(1));
             break;
@@ -197,20 +217,19 @@ class Client{
             break;
 
              /*
-            MessageType.CHANGETEAM - informuje o zmianie druzyny jakiegos gracza 
+            MessageType.CHANGETEAM - informuje o pmyślnej zmianie druzyny gracza (odpowiedź na CHANGETEAM klienta)
             Dostajemy informacje o:
-             ID gracza                    (param1) 
-             ID druzyny na jaka zmieniamy (param2)
-             ID gry                       (objecttype)
+             id druzyny                    (param1) 
             */
             case MessageType.CHANGETEAM: 
-            //usuniecie gracza z jednej druzyny
-            this.#player.removePlayerFromTeam(1-parseInt(message.getParam2()),message.getParam1());
-            //dodanie gracza do drugiej druzyny
-            this.#player.addPlayerToTeam(parseInt(message.getParam2()),message.getParam1());
-            //update list graczy w gui gry
-            this.#updatePlayersList(message.getParam2(), this.#player.getTeam(message.getParam2()));
-            this.#updatePlayersList(1-message.getParam2(), this.#player.getTeam(1-message.getParam2()));
+                /*//usuniecie gracza z jednej druzyny
+                this.#player.removePlayerFromTeam(1-parseInt(message.getParam2()),message.getParam1());
+                //dodanie gracza do drugiej druzyny
+                this.#player.addPlayerToTeam(parseInt(message.getParam2()),message.getParam1());
+                //update list graczy w gui gry
+                this.#updatePlayersList(message.getParam2(), this.#player.getTeam(message.getParam2()));
+                this.#updatePlayersList(1-message.getParam2(), this.#player.getTeam(1-message.getParam2()));*/
+                this.#onTeamChanged(parseInt(message.getParam1()));
             break;
 
             /*
@@ -265,7 +284,7 @@ class Client{
     }
 
     #onConnectionError(error){
-        console.error(error());
+        console.error(error);
     }
 
     #onConnectionClosed(){
@@ -276,22 +295,14 @@ class Client{
      * Metody wywoływane przez wiadomości
      */
 
-    
-
 
     #onGameJoined(gameId, playerId, team){
         this.#game.gameId = gameId;
         this.#player.playerId = playerId;
         this.#player.team = team;
 
-        this.#gameScreen = this.#gui.showGameScreen(gameId, (x, y) => { this.#onVote(x, y); },  () => { this.#exitGame(); });
-
-        this.#gameScreen.serverStatusWidget.setStatus(true);
-        this.#gameScreen.serverStatusWidget.setAddress(this.#serverAddr, this.#serverPort);
-
-        this.#connection.send(new Message(MessageType.GETROUND));
-        this.#connection.send(new Message(MessageType.GETMAP, '', '0', ''));
-        this.#connection.send(new Message(MessageType.GETMAP, '', '1', ''));
+        this.#lobbyScreen = this.#gui.showLobbyScreen(gameId, playerId, true,  () => { this.#exitGame(); }, () => { this.#changeTeam(); }, () => { this.#enterGame(); })
+        this.#gameScreen = undefined;
     }
 
     #onVotingResult(votingId, result){
@@ -318,23 +329,33 @@ class Client{
         this.#gameScreen.roundTimerWidget.setEndTime(endTime);
     }
 
+    #onTeamChanged(newTeam){
+        this.#player.team = newTeam;
+    }
+
     #updatePlayersList(team, list){
+        this.#game.teams[team] = list;
+
+        let screen = this.#lobbyScreen;
+        if(this.#gameScreen != undefined) screen = this.#gameScreen;
+        
         if(team == this.#player.team){
-            this.#gameScreen.playerTeamList.setList(list);
+            screen.playerTeamList.setList(list);
         }
         else{
-            this.#gameScreen.opponentTeamList.setList(list);
+            screen.opponentTeamList.setList(list);
         }
     }
 
     #updateBoard(team, serializedBoard){
-        const board = Board.decode(serializedBoard);
-        this.#game.boards[team] = board;
+        this.#game.boards[team] = Board.decode(serializedBoard);
+
+        if(this.#gameScreen == undefined) return;
         if(team == this.#player.team){
-            this.#gameScreen.playerBoardWidget.setBoard(board);
+            this.#gameScreen.playerBoardWidget.setBoard(this.#game.boards[team]);
         }
         else{
-            this.#gameScreen.opponentBoardWidget.setBoard(board);
+            this.#gameScreen.opponentBoardWidget.setBoard(this.#game.boards[team]);
         }
     }
 
@@ -343,12 +364,18 @@ class Client{
         const x = parseInt(field.substring(0, separatorIndex));
         const y = parseInt(field.substring(separatorIndex + 1));
 
+        console.log(`BEFORE map: ${team}, field: [${x}, ${y}], status: ${this.#game.boards[team].getStatus(x, y)}, new status: ${status}`);
+
         this.#game.boards[team].changeStatus(x, y, status);
+
+        console.log(`AFTER map: ${team}, field: [${x}, ${y}], status: ${this.#game.boards[team].getStatus(x, y)}, new status: ${status}`);
+
+        if(this.#gameScreen == undefined) return;
         if(team == this.#player.team){
-            this.#gameScreen.playerBoardWidget.updateFields();
+            this.#gameScreen.playerBoardWidget.setBoard(this.#game.boards[team]);
         }
         else{
-            this.#gameScreen.opponentBoardWidget.updateFields();
+            this.#gameScreen.opponentBoardWidget.setBoard(this.#game.boards[team]);
         }
     }
     

@@ -102,6 +102,8 @@ void Client::handleEvent(uint32_t events){
                         break;
                     }
                     this->getPlayer()->getGame()->changeTeam(atoi(message.getParam1().c_str()),this->getPlayer());
+                    Message m = Message(MessageType::CHANGETEAM, std::to_string(this->getPlayer()->getTeamId()));
+                    this->writem(m);
                 break;}
                 case GETMAP:{
                     int team = atoi(message.getParam1().c_str());
@@ -244,24 +246,11 @@ void Client::showPlayers(){
         this->writem(message);
         return;
     }
-    std::string s1{""};
-    if(this->getPlayer()->getGame()->getTeam(0)->size() > 0){
-        for (auto i: *this->getPlayer()->getGame()->getTeam(0)) {
-            s1+=i.getId();
-            s1+=" ";
-        }
-    }
-    Message message1 = Message(MessageType::SHOWTEAMS,this->getPlayer()->getGame()->getId(),"0",s1); 
+   
+    Message message1 = this->player->getGame()->currentTeamInfo(0);
     this->writem(message1);
 
-    std::string s2{""};
-    if(this->getPlayer()->getGame()->getTeam(1)->size() > 0){
-        for (auto i: *this->getPlayer()->getGame()->getTeam(1)) {
-            s2+=i.getId();
-            s2+=" ";
-        }
-    }
-    Message message2 = Message(MessageType::SHOWTEAMS,this->getPlayer()->getGame()->getId(),"1",s2); 
+    Message message2 = this->player->getGame()->currentTeamInfo(1);
     this->writem(message2);
 }
 

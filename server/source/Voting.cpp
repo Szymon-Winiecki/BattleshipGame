@@ -70,6 +70,8 @@ bool Voting::vote(Vote& vote){
 
     if(!validate(vote)) return false;
 
+    playersThatVoted.insert(vote.getPlayerId());
+
     if(votes.find(vote.getVote()) == votes.end()){
         votes.insert({vote.getVote(), 1});
     }

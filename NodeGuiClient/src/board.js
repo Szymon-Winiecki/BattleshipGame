@@ -42,11 +42,18 @@ class Board{
     }
 
     getStatus(x, y){
+        if(!this.#validField(x, y)) return FieldStatus.INVALID_FIELD;
         return this.#fields[x][y];
     }
 
     changeStatus(x, y, newStatus){
+        if(!this.#validField(x, y)) return FieldStatus.INVALID_FIELD;
         this.#fields[x][y] = newStatus;
+    }
+
+    #validField(x, y){
+        if(x < 0 || x >= this.#size || y < 0 || y >= this.#size) return false;
+        return true;
     }
 }
 

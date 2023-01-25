@@ -81,8 +81,18 @@ void Game::sendNextRoundInfo(){
     sendToAllPlayers(m);
 }
 
+void Game::sendCurrentTeams(){
+    Message m1 = currentTeamInfo(0);
+    Message m2 = currentTeamInfo(1);
+    sendToAllPlayers(m1);
+    sendToAllPlayers(m2);
+}
+
 void Game::sendToTeam(Message &message, int team){
     assertTeam(team);
+    if(teams[team].empty()){
+        return;
+    }
     for(auto player : teams[team]){
         player.sendMessage(message);
     }
@@ -120,7 +130,29 @@ Player* Game::join(int team){
     Player newPlayer = Player();
     newPlayer.setTeamId(team);
     teams[team].push_front(newPlayer);
+
+    sendCurrentTeams();
+
     return &(*teams[team].begin());
+}
+
+void Game::leave(int team, Player* player){
+    teams[team].remove(*player);
+
+    sendCurrentTeams();
+    /*Message message1 = Message(PLAYERLEFT,player->getGame()->getId(),player->getId(),std::to_string(player->getTeamId()));
+    sendToAllPlayers(message1); */
+}
+
+void Game::changeTeam(int team, Player* player){
+    this->leave(1-team, player);
+    player->setTeamId(team);
+    teams[team].push_front(*player);
+
+    sendCurrentTeams();
+    /*Message message1 = Message(CHANGETEAM,player->getGame()->getId(),player->getId(),std::to_string(player->getTeamId()));
+    sendToAllPlayers(message1);      */          
+
 }
 
 std::string Game::getId(){
@@ -147,19 +179,19 @@ bool Game::vote(Vote &vote){
     return activeVoting->vote(vote);
 }
 
-void Game::leave(int team, Player* player){
-    teams[team].remove(*player);
-    Message message1 = Message(PLAYERLEFT,player->getGame()->getId(),player->getId(),std::to_string(player->getTeamId()));
-    sendToAllPlayers(message1); 
-}
+std::string Game::serializeTeam(int team, char separator){
+    assertTeam(team);
 
-void Game::changeTeam(int team, Player* player){
-    this->leave(1-team, player);
-    player->setTeamId(team);
-    teams[team].push_front(*player);
-    Message message1 = Message(CHANGETEAM,player->getGame()->getId(),player->getId(),std::to_string(player->getTeamId()));
-    sendToAllPlayers(message1);                
+    if(teams[team].empty()){
+        return "";
+    }
 
+    std::stringstream serialized {""};
+    for(Player player : teams[team]){
+        serialized << player.getId() << separator;
+    }
+
+    return serialized.str();
 }
 
 std::string Game::getSerializedMap(int team, bool showShips){
@@ -173,4 +205,9 @@ int Game::getNumberOfPlayers(){
 
 Message Game::currentRoundInfo(){
     return Message(NEXTROUND, activeVoting->getVotingId(), std::to_string(currentTeam), std::to_string(activeVoting->getEndTime()));
+}
+
+Message Game::currentTeamInfo(int team){
+    assertTeam(team);
+    return Message(SHOWTEAMS, getId(), std::to_string(team), serializeTeam(team, '&'));
 }

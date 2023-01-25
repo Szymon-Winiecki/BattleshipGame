@@ -8,8 +8,10 @@ class PlayersListWidget extends GuiWidget{
   #playersListView;
   #playersListViewLayout;
   #titleLabel;
+  #playersLabels = [];
 
   #players;
+  #title = '';
 
 
   // board - obiekt klasy Board reprezentujacy planszę do wyświetlenia, interactive - czy można na niej głosować (tylko na planszy przeciwnika można głosować)
@@ -33,16 +35,29 @@ class PlayersListWidget extends GuiWidget{
   
   updateList(){
 
-    const prevChildred = this.#playersListViewLayout.children();
-    for(let i = 1; i < prevChildred.length; ++i){
-      this.#playersListViewLayout.removeWidget(prevChildred[i]);
+    this.#titleLabel.delete();
+    for(let i = 0; i < this.#playersLabels.length; ++i){
+      this.#playersListViewLayout.removeWidget(this.#playersLabels[i]);
+      this.#playersLabels[i].setInlineStyle(`width: '0px'`);
+      this.#playersLabels[i].setText("");
     }
+
+    this.#playersLabels = new Array(this.#players.length);
+
+    this.#titleLabel = new QLabel();
+    this.#titleLabel.setObjectName('listTitle');
+    this.#titleLabel.setText(this.#title);
+
+    this.#playersListViewLayout.delete();
+    this.#playersListViewLayout = new FlexLayout();
+    this.#playersListView.setLayout(this.#playersListViewLayout);
+    this.#playersListViewLayout.addWidget(this.#titleLabel);
     
     for(let i = 0; i < this.#players.length; ++i){
-      console.log(this.#players[i]);
-      const playerLabel = new QLabel();
-      playerLabel.setText(`${i + 1}.  ${this.#players[i]}`);
-      this.#playersListViewLayout.addWidget(playerLabel);
+      this.#playersLabels[i] = new QLabel();
+      this.#playersLabels[i].setText(`${i + 1}.  ${this.#players[i]}`);
+      //this.#playersLabels[i].setInlineStyle(`background-color:'white'; width: '100%'`);
+      this.#playersListViewLayout.addWidget(this.#playersLabels[i]);
     }
 
     this.updateStyle();
@@ -52,7 +67,6 @@ class PlayersListWidget extends GuiWidget{
     this.#playersListView.setStyleSheet(`
     #playersListView {
       width: 140px;
-      align-items: 'left';
       justify-content: 'flex-start';
       padding: 5px;
       flex-direction: 'column';
@@ -76,6 +90,7 @@ class PlayersListWidget extends GuiWidget{
   }
 
   setTitle(title){
+    this.#title = title;
     this.#titleLabel.setText(title);
   }
 

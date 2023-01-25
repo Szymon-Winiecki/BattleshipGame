@@ -1,8 +1,9 @@
+const Board = require("./board");
 
 class Game{
     gameId;
-    teams;
-    boards = new Array(2);
+    teams = new Array(2);
+    boards = [new Board(), new Board()];
     currentVotingId = 'testVoting';
 }
 

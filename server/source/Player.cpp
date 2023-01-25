@@ -13,7 +13,7 @@ bool Player::operator==(const Player &rhs){
     return this->getId() == rhs.getId();
 }
 
-Player::Player() : playerId{ generateId() } {};
+Player::Player() : playerId{ generateId() }, client{ nullptr }, game { nullptr } {};
 
 
 std::string Player::getId() const{
@@ -41,6 +41,7 @@ int Player::getTeamId() const{
 }
 
 void Player::sendMessage(Message &message){
+    if(this->client == nullptr) return;
     this->client->writem(message);
 }
 
