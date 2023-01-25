@@ -13,6 +13,7 @@ class Board{
     static decode(encodedMap, separator = '&'){
         const separatorIndex = encodedMap.indexOf(separator);
         const size = parseInt(encodedMap.substring(0, separatorIndex));
+
         encodedMap = encodedMap.substring(separatorIndex + 1);
 
         let fields = new Array(size);

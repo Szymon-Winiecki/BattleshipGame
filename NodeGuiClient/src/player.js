@@ -1,7 +1,8 @@
 
 class Player{
-    #playerId;
-    #team;
+    playerId;
+    team;
+    isCreator;
 }
 
 

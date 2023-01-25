@@ -14,6 +14,7 @@ Game::Game() :
     maps { Map(6), Map(6)},
     isOpen { false },
     started { false },
+    owner { nullptr },
     currentTeam { 0 } {
 
         //ustawienie kilku przykladowych stakow na mapie
@@ -23,7 +24,6 @@ Game::Game() :
         maps[1].placeShip(4, 1, 3, false);
 
         open();
-        start();
     }
 
 void Game::open(){
@@ -34,14 +34,14 @@ void Game::start(){
     started = true;
     startTime = std::chrono::duration_cast< std::chrono::milliseconds >(std::chrono::system_clock::now().time_since_epoch()).count();
 
-    Message team0map0 = Message(MessageType::GETMAP, "", "0", maps[0].serialize(false, '|'));
-    Message team0map1 = Message(MessageType::GETMAP, "", "1", maps[1].serialize(true, '|'));
+    Message team0map0 = Message(MessageType::GETMAP, "0", maps[0].serialize(false, '&'), "");
+    Message team0map1 = Message(MessageType::GETMAP, "1", maps[1].serialize(true, '&'), "");
 
     sendToTeam(team0map0, 0);
     sendToTeam(team0map1, 0);
 
-    Message team1map0 = Message(MessageType::GETMAP, "", "0", maps[0].serialize(true, '|'));
-    Message team1map1 = Message(MessageType::GETMAP, "", "1", maps[1].serialize(false, '|'));
+    Message team1map0 = Message(MessageType::GETMAP, "0", maps[0].serialize(true, '&'), "");
+    Message team1map1 = Message(MessageType::GETMAP, "1", maps[1].serialize(false, '&'), "");
 
     sendToTeam(team1map0, 1);
     sendToTeam(team1map1, 1);
@@ -194,6 +194,14 @@ std::string Game::serializeTeam(int team, char separator){
     return serialized.str();
 }
 
+void Game::setOwner(Player* owner){
+    this->owner = owner;
+}
+
+Player* Game::getOwner(){
+    return owner;
+}
+
 std::string Game::getSerializedMap(int team, bool showShips){
     assertTeam(team);
     return maps[team].serialize(!showShips, '&');
@@ -204,6 +212,9 @@ int Game::getNumberOfPlayers(){
 }
 
 Message Game::currentRoundInfo(){
+    if(!started){
+        return Message(NEXTROUND, "", "2", "0");
+    }
     return Message(NEXTROUND, activeVoting->getVotingId(), std::to_string(currentTeam), std::to_string(activeVoting->getEndTime()));
 }
 

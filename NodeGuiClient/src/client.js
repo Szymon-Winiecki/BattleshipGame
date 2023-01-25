@@ -58,6 +58,10 @@ class Client{
         process.exit(0);
     }
 
+    #startGame(){
+        this.#connection.send(new Message(MessageType.STARTGAME));
+    }
+
     #enterGame(){
         this.#gameScreen = this.#gui.showGameScreen(this.#game.gameId, (x, y) => { this.#onVote(x, y); },  () => { this.#exitGame(); });
 
@@ -127,6 +131,7 @@ class Client{
               this.#player.setTeamId(parseInt(message.getParam2()));
               this.#player.addPlayerToTeam(message.getParam2(),this.#player.getPlayerid());
 
+              this.#player.isCreator = true;
               this.#onGameJoined(message.getObjectId(), message.getParam1(), parseInt(message.getParam2()));
               this.#updatePlayersList(0, this.#player.getTeam(0));
               this.#updatePlayersList(1, this.#player.getTeam(1));
@@ -146,6 +151,8 @@ class Client{
               this.#player.setGameId(message.getObjectId());
               this.#player.setPlayerid(message.getParam1());
               this.#player.setTeamId(parseInt(message.getParam2()));
+
+              this.#player.isCreator = false;
               this.#onGameJoined(message.getObjectId(), message.getParam1(), parseInt(message.getParam2()));
               
             break;
@@ -301,7 +308,7 @@ class Client{
         this.#player.playerId = playerId;
         this.#player.team = team;
 
-        this.#lobbyScreen = this.#gui.showLobbyScreen(gameId, playerId, true,  () => { this.#exitGame(); }, () => { this.#changeTeam(); }, () => { this.#enterGame(); })
+        this.#lobbyScreen = this.#gui.showLobbyScreen(gameId, playerId, this.#player.isCreator,  () => { this.#exitGame(); }, () => { this.#changeTeam(); }, () => { if(this.#player.isCreator) {this.#startGame();} this.#enterGame(); })
         this.#gameScreen = undefined;
     }
 
@@ -321,8 +328,12 @@ class Client{
             this.#gameScreen.roundTimerWidget.setRound(RoundTimerWidget.RoundType.OWN);
             this.#gameScreen.opponentBoardWidget.setInteractive(true);
         }
-        else{
+        else if(team == (1 - this.#player.team)){
             this.#gameScreen.roundTimerWidget.setRound(RoundTimerWidget.RoundType.OPPONENT);
+            this.#gameScreen.opponentBoardWidget.setInteractive(false);
+        }
+        else{
+            this.#gameScreen.roundTimerWidget.setRound(RoundTimerWidget.RoundType.BREAK);
             this.#gameScreen.opponentBoardWidget.setInteractive(false);
         }
         

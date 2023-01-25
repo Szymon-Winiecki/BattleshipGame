@@ -40,7 +40,6 @@ class lobbyScreen extends GuiScreen{
         //layout
         const [lobbyView, lobbyViewLayout] = guiLayout.Column("lobby");
         const [statusRow, statusRowLayout] = guiLayout.Row("statusRow");
-        //const [mainRow, mainRowLayout] = guiLayout.Row("mainRow");
         const [teamsRow, teamsRowLayout] = guiLayout.Row("teams");
         const [changeServerRow, changeServerRowLayout] = guiLayout.Row();
     
@@ -127,7 +126,7 @@ class lobbyScreen extends GuiScreen{
         }
         #teams{
             justify-content: 'space-between';
-            height: '70%';
+            height: '60%';
             width: '50%';
             padding-bottom: 80px;
         }

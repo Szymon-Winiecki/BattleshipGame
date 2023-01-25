@@ -46,7 +46,7 @@ class RoundTimerWidget extends GuiWidget{
       this.#teamLabel.setText('przeciwnik głosuje');
     }
     else if(round == RoundTimerWidget.RoundType.BREAK){
-      this.#teamLabel.setText('przerwa');
+      this.#teamLabel.setText('oczekiwanie');
     }
   }
 
@@ -80,7 +80,7 @@ class RoundTimerWidget extends GuiWidget{
       this.disableTimerUpdate();  //zaprzestań aktualizacji zegara, po usunięciu widgetu
       return;
     }
-
+    
     if(this.#endTime != 0){
       const secondsToGo = parseInt((this.#endTime - Date.now()) / 1000);
       if(secondsToGo >= 0){

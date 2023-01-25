@@ -34,6 +34,7 @@ private:
     std::string gameId;
     long startTime;
 
+    Player* owner;
     std::list<Player> teams[2];
     Map maps[2];
 
@@ -63,6 +64,9 @@ public:
 
     /*  rozpoczecie gry - rusza pierwsza runda*/
     void start();
+
+    void setOwner(Player* player);
+    Player* getOwner();
 
     void nextRound();
     void runRoundController();

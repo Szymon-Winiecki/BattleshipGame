@@ -133,6 +133,14 @@ void Client::handleEvent(uint32_t events){
                     Message m = getPlayer()->getGame()->currentRoundInfo();
                     getPlayer()->sendMessage(m);
                 break;}
+                case STARTGAME:
+                    if(getPlayer() != getPlayer()->getGame()->getOwner()){
+                        Message message = Message(MessageType::ERROR,"Tylko wlasciciel moze rozpoczac gre\n");
+                        this->writem(message);
+                        break;
+                    }
+                    getPlayer()->getGame()->start();
+                break;
                 default:
                     events |= EPOLLERR;
                 break;
@@ -188,6 +196,7 @@ void Client::createGame(){
     player->setClient(this);
     player->setGame(newGame);
     this->setPlayer(player);
+    newGame->setOwner(player);
     Message message = Message(MessageType::CREATE,newGame->getId(),player->getId(),std::to_string(player->getTeamId()));
     this->writem(message);
 

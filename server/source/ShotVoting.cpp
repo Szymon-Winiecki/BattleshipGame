@@ -1,5 +1,4 @@
 #include "../include/ShotVoting.h"
-#include "iostream"
 
 ShotVoting::ShotVoting(std::string gameId, std::list<Player>* allowedPlayers, long duration, Map* map) : 
     Voting(gameId, allowedPlayers, duration),
@@ -19,7 +18,6 @@ std::vector<int> ShotVoting::decodeVote(std::string votestr, char separator){
 }
 
 bool ShotVoting::validateShot(int x, int y){
-    std::cout << static_cast<int>(map->getStatus(x, y)) << std::endl;
     if(map->getStatus(x, y) != FieldStatus::CLEAR && map->getStatus(x, y) != FieldStatus::SHIP) return false;
     return true;
 }

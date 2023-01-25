@@ -23,7 +23,8 @@ enum MessageType{
     VOTERESULT = 15,
     NEXTROUND = 16,
     UPDATEMAP = 17,
-    GETROUND = 18
+    GETROUND = 18,
+    STARTGAME = 19
 };
 
 class Message{

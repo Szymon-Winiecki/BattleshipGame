@@ -106,10 +106,19 @@ class BoardWidget extends GuiWidget{
   setBoard(board){
 
     //usuń poprzednie pola
-    this.#boardViewLayout.delete();
+    /*this.#boardViewLayout.delete();
     this.#boardViewLayout = new FlexLayout();
-    this.#boardView.setLayout(this.#boardViewLayout);
+    this.#boardView.setLayout(this.#boardViewLayout);*/
 
+    //usuń poprzednie pola
+    if(this.#fieldsWidgets){
+      for(let i = 0; i < board.getSize(); ++i){
+        for(let j = 0; j < board.getSize(); ++j){
+          this.#fieldsWidgets[j][i].delete();
+        }
+      }
+    }
+    
     if(this.#board === undefined || this.#fieldsWidgets === undefined || this.#board.length != board.length){
       this.#fieldsWidgets = new Array(board.getSize());
       for(let i = 0; i < board.getSize(); ++i){
