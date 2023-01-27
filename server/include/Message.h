@@ -24,7 +24,8 @@ enum MessageType{
     NEXTROUND = 16,
     UPDATEMAP = 17,
     GETROUND = 18,
-    STARTGAME = 19
+    STARTGAME = 19,
+    BEOWNER = 20
 };
 
 class Message{

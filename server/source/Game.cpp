@@ -9,7 +9,7 @@ std::string Game::generateId(){
 
 Game::Game() :
     gameId { generateId() },
-    maxPlayers { 2 },
+    maxPlayers { 8 },
     roundDuration {10 * 1000}, // 10s
     maps { Map(6), Map(6)},
     isOpen { false },
@@ -33,6 +33,9 @@ void Game::open(){
 void Game::start(){
     started = true;
     startTime = std::chrono::duration_cast< std::chrono::milliseconds >(std::chrono::system_clock::now().time_since_epoch()).count();
+
+    Message start = Message(STARTGAME); //wiadomosc do wszystkich graczy zeby zaczela im sie gra
+    sendToAllPlayers(start);
 
     Message team0map0 = Message(MessageType::GETMAP, "0", maps[0].serialize(false, '&'), "");
     Message team0map1 = Message(MessageType::GETMAP, "1", maps[1].serialize(true, '&'), "");
@@ -202,6 +205,23 @@ Player* Game::getOwner(){
     return owner;
 }
 
+void Game::removeOwner(){
+    this->owner = nullptr;
+}
+
+Player* Game::changeOwner(){
+    this->owner = nullptr;
+    if(this->teams[0].size()>0){
+        this->owner = &this->teams[0].front();
+    }
+    else if(this->teams[1].size()>0){
+        this->owner = &this->teams[1].front();
+    }
+    Message message = Message(BEOWNER,this->getId());
+    this->owner->sendMessage(message);
+    return this->owner;
+}
+
 std::string Game::getSerializedMap(int team, bool showShips){
     assertTeam(team);
     return maps[team].serialize(!showShips, '&');
@@ -222,3 +242,4 @@ Message Game::currentTeamInfo(int team){
     assertTeam(team);
     return Message(SHOWTEAMS, getId(), std::to_string(team), serializeTeam(team, '&'));
 }
+

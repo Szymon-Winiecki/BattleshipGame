@@ -67,6 +67,8 @@ public:
 
     void setOwner(Player* player);
     Player* getOwner();
+    void removeOwner();
+    Player* changeOwner();
 
     void nextRound();
     void runRoundController();
@@ -77,6 +79,7 @@ public:
     void leave(int team,Player* player);
     bool vote(Vote &vote);
     int getNumberOfPlayers();
+
 
     std::string getId();
     long getStartTime();

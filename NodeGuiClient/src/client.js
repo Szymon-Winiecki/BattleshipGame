@@ -110,10 +110,6 @@ class Client{
             case MessageType.ERROR: 
               console.log(message.getParam1());
             break;
-            case MessageType.SERVERERROR:
-              console.log(message.getParam1());
-              return -2; //rozlacz z serwerem nw czy to tu dziala, nietestowane
-            break;
 
              /*
             MessageType.CREATE - informuje o grze ktora stworzylismy, jest odpowiedzia na wyslana od nas do serwera wiadomosc typu CREATE
@@ -283,7 +279,22 @@ class Client{
                 console.log(message.encode());
                 this.#updateField(parseInt(message.getObjectId()), message.getParam1(), parseInt(message.getParam2()));
             break;
+            /*wiadomosc z serwera ze zostal zamkniety */
+            case MessageType.SERVERERROR:
+                this.#player.clear();
+                this.#gui.showConnectScreen((addr, port) => { this.#connectToServer(addr, port); });
 
+            break;
+            /*zostajesz wlascicielem gry */
+            case MessageType.BEOWNER:
+                this.#player.isCreator = true;
+                this.#lobbyScreen = this.#gui.showLobbyScreen(this.#game.gameId , this.#player.playerId, this.#player.isCreator,  () => { this.#exitGame(); }, () => { this.#changeTeam(); }, () => { if(this.#player.isCreator) {this.#startGame();} {} })
+      
+            break;
+            /*wiadomos z serwera ze gra sie rozpoczyna */
+            case MessageType.STARTGAME:
+                this.#enterGame();
+            break;
             default:
               console.log("incorrect message, albo jeszcze nie ustawiona\n");
             break;
@@ -292,6 +303,13 @@ class Client{
 
     #onConnectionError(error){
         console.error(error);
+        if(error.code === 'ECONNREFUSED'){ //error ktory wystepuje gdy nie mozna sie polaczyc z serwerem(bo jest np wylaczony)
+            return;
+        }
+        //inne bledy zwiazane z polaczeniem, mozna zrobic jak wyzej tylko dla sytuacji gdy 
+        this.#disconnectFromServer();
+        this.#connectionScreen = this.#gui.showConnectScreen((addr, port) => { this.#connectToServer(addr, port); });
+   
     }
 
     #onConnectionClosed(){
@@ -308,7 +326,7 @@ class Client{
         this.#player.playerId = playerId;
         this.#player.team = team;
 
-        this.#lobbyScreen = this.#gui.showLobbyScreen(gameId, playerId, this.#player.isCreator,  () => { this.#exitGame(); }, () => { this.#changeTeam(); }, () => { if(this.#player.isCreator) {this.#startGame();} this.#enterGame(); })
+        this.#lobbyScreen = this.#gui.showLobbyScreen(gameId, playerId, this.#player.isCreator,  () => { this.#exitGame(); }, () => { this.#changeTeam(); }, () => { if(this.#player.isCreator) {this.#startGame();} {} })
         this.#gameScreen = undefined;
     }
 

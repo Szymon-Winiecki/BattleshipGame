@@ -139,6 +139,12 @@ void Client::handleEvent(uint32_t events){
                         this->writem(message);
                         break;
                     }
+
+                    if(this->getPlayer()->getGame()->getTeam(0)->size()<1 || this->getPlayer()->getGame()->getTeam(1)->size()<1){
+                        Message message = Message(MessageType::ERROR,"W obu druzynach musi byc przynajmniej jeden gracz!\n");
+                        this->writem(message);
+                        break;
+                    }
                     getPlayer()->getGame()->start();
                 break;
                 default:
@@ -169,6 +175,10 @@ void Client::readm(uint32_t events){
 void Client::remove() {
     printf("removing %d\n", _fd);
     if (this->player != nullptr) {
+        if(this->player->getGame()->getNumberOfPlayers()==1){ //jezeli byl jedynym graczem
+            games.remove(this->player->getGame()); 
+            std::cout<<"usunieto gre\n"<<std::endl;
+        }
         this->getPlayer()->getGame()->leave(this->getPlayer()->getTeamId(), this->getPlayer());
     }
     clients.erase(this);
@@ -236,14 +246,21 @@ void Client::leaveGame(){
         this->writem(message);
         return;
     }
-    if(this->getPlayer()->getGame()->getNumberOfPlayers()==0){
-        games.remove(this->getPlayer()->getGame());
-        std::cout<<"usunieto gre\n"<<std::endl;
+    Game* game = this->getPlayer()->getGame();
+    if(game->getOwner()==this->getPlayer()){
+        this->getPlayer()->getGame()->removeOwner();
     }
     this->getPlayer()->getGame()->leave(this->getPlayer()->getTeamId(),this->getPlayer());
     this->player = nullptr;
     Message message = Message(MessageType::LEAVE,"Udalo sie wyjsc\n");
     this->writem(message);
+    if(game->getNumberOfPlayers()==0){ 
+        games.remove(game); 
+        std::cout<<"usunieto gre\n"<<std::endl;
+    }
+    else{
+        game->changeOwner();
+    }
 
 }
 
@@ -316,7 +333,9 @@ void setReuseAddr(int sock){
 
 void ctrl_c(int){
     //zrobic tu informowanie klientow o zamknieciu serwera ASAP
+    Message message = Message(SERVERERROR);
     for(Client * client : clients){
+        client->writem(message);
         delete client;
     }
     printf("Closing server\n");

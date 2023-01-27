@@ -2,7 +2,6 @@ var net = require('net');
 var Message = require('./message').Message;
 var MessageType = require('./message').MessageType;
 
-var player = require('./player').player;
 
 
 class Connection{
@@ -24,13 +23,11 @@ class Connection{
     this.#socket = new net.Socket();
 
     this.#socket.on('error', this.onErrorCallback);
-
   
     this.#socket.on('data', (data) => {
 
       let messages = data.toString().split('}');
       messages.pop(); //usuwa ostatnią (pustą) wiadomość
-
       let i = 0;
       while (i < messages.length) {
         const message = Message.decode(messages[i]);
@@ -49,6 +46,7 @@ class Connection{
 
   disconnect(){
     this.#socket.destroy();
+
   }
 
   send(message){

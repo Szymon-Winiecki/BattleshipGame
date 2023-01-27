@@ -57,14 +57,14 @@ class lobbyScreen extends GuiScreen{
         const changeTeamButton = new QPushButton();
         changeTeamButton.setText("zmień druzyne");
 
-        const startButton = new QPushButton();
 
-        if(isOwner){
+        /*if(isOwner){
+            const startButton = new QPushButton();
             startButton.setText("rozpocznij");
         }
         else{
             startButton.setText("gotowość");
-        }
+        }*/
         
 
         const exitButton = new QPushButton();
@@ -87,7 +87,12 @@ class lobbyScreen extends GuiScreen{
         lobbyViewLayout.addWidget(statusRow);
         lobbyViewLayout.addWidget(teamsRow);
         lobbyViewLayout.addWidget(changeTeamButton);
-        lobbyViewLayout.addWidget(startButton);
+        if(isOwner){
+            const startButton = new QPushButton();
+            startButton.setText("rozpocznij");
+            lobbyViewLayout.addWidget(startButton);
+            startButton.addEventListener('clicked', this.#onStartGameCallback);
+        }
         lobbyViewLayout.addWidget(exitButton);
 
 
@@ -103,7 +108,6 @@ class lobbyScreen extends GuiScreen{
 
         exitButton.addEventListener('clicked', this.#onExitCallback);   
         changeTeamButton.addEventListener('clicked', this.#onChangeTeamCallback);
-        startButton.addEventListener('clicked', this.#onStartGameCallback);
 
         //styling
     
