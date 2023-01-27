@@ -41,7 +41,6 @@ class lobbyScreen extends GuiScreen{
         const [lobbyView, lobbyViewLayout] = guiLayout.Column("lobby");
         const [statusRow, statusRowLayout] = guiLayout.Row("statusRow");
         const [teamsRow, teamsRowLayout] = guiLayout.Row("teams");
-        const [changeServerRow, changeServerRowLayout] = guiLayout.Row();
     
         //widgets
 

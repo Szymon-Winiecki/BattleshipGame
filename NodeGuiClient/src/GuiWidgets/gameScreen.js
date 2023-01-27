@@ -20,16 +20,16 @@ class GameScreen extends GuiScreen{
     #onVoteCallabck;
     #onExitCallback;
 
-    constructor(gameId, onVoteCallabck, onExitCallback){
+    constructor(gameId, playerId, onVoteCallabck, onExitCallback){
         super();
 
         this.#onVoteCallabck = onVoteCallabck;
         this.#onExitCallback = onExitCallback;
 
-        this.#init(gameId);
+        this.#init(gameId, playerId);
     }
 
-    #init(gameId){
+    #init(gameId, playerId){
         //root view
         this.#rootView = new QWidget();
         const rootViewLayout = new FlexLayout();
@@ -51,6 +51,9 @@ class GameScreen extends GuiScreen{
 
         const gameIdLabel = new QLabel();
         gameIdLabel.setText(gameId);
+
+        const playerIdLabel = new QLabel();
+        playerIdLabel.setText(playerId);
 
         this.roundTimerWidget = new RoundTimerWidget();
 
@@ -86,6 +89,7 @@ class GameScreen extends GuiScreen{
         gameViewLayout.addWidget(mainRow);
         gameViewLayout.addWidget(exitButton);
 
+        statusRowLayout.addWidget(playerIdLabel);
         statusRowLayout.addWidget(this.serverStatusWidget.getWidget());
         statusRowLayout.addWidget(gameIdLabel);
 

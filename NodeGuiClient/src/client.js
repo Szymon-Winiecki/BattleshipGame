@@ -28,7 +28,37 @@ class Client{
         this.#game = new Game();
         this.#player = new Player();
    
-        this.#gui.showConnectScreen((addr, port) => { this.#connectToServer(addr, port); });
+        this.#showConnectScreen();
+    }
+
+    /*
+     *  Metody wyświetlajace ekrany
+     */
+
+    #showConnectScreen(){
+        this.#connectionScreen = this.#gui.showConnectScreen((addr, port) => { this.#connectToServer(addr, port); }, () => { this.#closeApp(); });
+    }
+
+    #showMenuScreen(){
+        this.#menuScreen = this.#gui.showMenuScreen(() => { this.#createGame(); },(gameId) => { this.#joinGame(gameId); }, () => { this.#disconnectFromServer(); }, () => { this.#closeApp(); });
+        this.#menuScreen.serverStatusWidget.setStatus(true);
+        this.#menuScreen.serverStatusWidget.setAddress(this.#serverAddr, this.#serverPort);
+        this.#gameScreen = undefined;
+    }
+
+    #showLobbyScreen(){
+        this.#lobbyScreen = this.#gui.showLobbyScreen(this.#game.gameId, this.#player.playerId, this.#player.isCreator,  () => { this.#exitGame(); }, () => { this.#changeTeam(); }, () => { if(this.#player.isCreator) {this.#startGame();} {} })
+        this.#gameScreen = undefined;
+
+        this.#lobbyScreen.serverStatusWidget.setStatus(true);
+        this.#lobbyScreen.serverStatusWidget.setAddress(this.#serverAddr, this.#serverPort);
+    }
+
+    showGameScreen(){
+        this.#gameScreen = this.#gui.showGameScreen(this.#game.gameId, this.#player.playerId, (x, y) => { this.#onVote(x, y); },  () => { this.#exitGame(); });
+
+        this.#gameScreen.serverStatusWidget.setStatus(true);
+        this.#gameScreen.serverStatusWidget.setAddress(this.#serverAddr, this.#serverPort);
     }
 
     /*
@@ -50,7 +80,7 @@ class Client{
 
     #disconnectFromServer(){
         this.#connection.send(new Message(MessageType.DISCONNECT));
-        this.#connectionScreen = this.#gui.showConnectScreen((addr, port) => { this.#connectToServer(addr, port); });
+        this.#showConnectScreen();
     }
 
     #closeApp(){
@@ -63,10 +93,7 @@ class Client{
     }
 
     #enterGame(){
-        this.#gameScreen = this.#gui.showGameScreen(this.#game.gameId, (x, y) => { this.#onVote(x, y); },  () => { this.#exitGame(); });
-
-        this.#gameScreen.serverStatusWidget.setStatus(true);
-        this.#gameScreen.serverStatusWidget.setAddress(this.#serverAddr, this.#serverPort);
+        this.showGameScreen();
 
         this.#updatePlayersList(0, this.#game.teams[0]);
         this.#updatePlayersList(1, this.#game.teams[1]);
@@ -86,8 +113,7 @@ class Client{
 
     #exitGame(){
         this.#connection.send(new Message(MessageType.LEAVE));
-        this.#menuScreen = this.#gui.showMenuScreen(() => { this.#createGame(); },(gameId) => { this.#joinGame(gameId); }, () => { this.#disconnectFromServer(); }, () => { this.#closeApp(); });
-        this.#gameScreen = undefined;
+        this.#showMenuScreen();
     }
 
     /*
@@ -97,9 +123,7 @@ class Client{
     #onConnected(addr, port){
         this.#serverAddr = addr;
         this.#serverPort = port;
-        this.#menuScreen = this.#gui.showMenuScreen(() => { this.#createGame(); },(gameId) => { this.#joinGame(gameId); }, () => { this.#disconnectFromServer(); }, () => { this.#closeApp(); });
-        this.#menuScreen.serverStatusWidget.setStatus(true);
-        this.#menuScreen.serverStatusWidget.setAddress(addr, port);
+        this.#showMenuScreen();
     }
 
     #onMessage(message){
@@ -282,13 +306,13 @@ class Client{
             /*wiadomosc z serwera ze zostal zamkniety */
             case MessageType.SERVERERROR:
                 this.#player.clear();
-                this.#gui.showConnectScreen((addr, port) => { this.#connectToServer(addr, port); });
+               this.#showConnectScreen();
 
             break;
             /*zostajesz wlascicielem gry */
             case MessageType.BEOWNER:
                 this.#player.isCreator = true;
-                this.#lobbyScreen = this.#gui.showLobbyScreen(this.#game.gameId , this.#player.playerId, this.#player.isCreator,  () => { this.#exitGame(); }, () => { this.#changeTeam(); }, () => { if(this.#player.isCreator) {this.#startGame();} {} })
+                this.#showLobbyScreen();
       
             break;
             /*wiadomos z serwera ze gra sie rozpoczyna */
@@ -308,12 +332,12 @@ class Client{
         }
         //inne bledy zwiazane z polaczeniem, mozna zrobic jak wyzej tylko dla sytuacji gdy 
         this.#disconnectFromServer();
-        this.#connectionScreen = this.#gui.showConnectScreen((addr, port) => { this.#connectToServer(addr, port); });
+        this.#showConnectScreen();
    
     }
 
     #onConnectionClosed(){
-        this.#connectionScreen = this.#gui.showConnectScreen((addr, port) => { this.#connectToServer(addr, port); });
+        this.#showConnectScreen();
     }
     
     /*
@@ -326,8 +350,7 @@ class Client{
         this.#player.playerId = playerId;
         this.#player.team = team;
 
-        this.#lobbyScreen = this.#gui.showLobbyScreen(gameId, playerId, this.#player.isCreator,  () => { this.#exitGame(); }, () => { this.#changeTeam(); }, () => { if(this.#player.isCreator) {this.#startGame();} {} })
-        this.#gameScreen = undefined;
+        this.#showLobbyScreen();
     }
 
     #onVotingResult(votingId, result){

@@ -7,11 +7,13 @@ class ConnectionScreen extends GuiScreen{
     #rootView;
 
     #onConnectCallback;
+    #onExitCallback;
 
-    constructor(onConnectCallback){
+    constructor(onConnectCallback, onExitCallback){
         super();
 
         this.#onConnectCallback = onConnectCallback;
+        this.#onExitCallback = onExitCallback;
 
         this.#init();
     }
@@ -25,14 +27,15 @@ class ConnectionScreen extends GuiScreen{
     
         //connection configuration layout
     
-        const [connConfWidget, connConfLayout] = guiLayout.Column();
+        const [connConfWidget, connConfLayout] = guiLayout.Column('connConfWidget');
         const [addrInputRow, addrInputRowLayout] = guiLayout.Row();
         const [portInputRow, portInputRowLayout] = guiLayout.Row();
     
         //connection configurtation widgtes
     
         const connConfTitleLabel = new QLabel();
-        connConfTitleLabel.setText("Połącz z serwerem")
+        connConfTitleLabel.setText("Połącz z serwerem");
+        connConfTitleLabel.setObjectName("connConfTitleLabel");
     
         const addrInputLabel = new QLabel();
         addrInputLabel.setText("adres: ");
@@ -53,6 +56,10 @@ class ConnectionScreen extends GuiScreen{
         const connectButton = new QPushButton();
         connectButton.setText("Połącz");
         connectButton.setObjectName("connectButton");
+
+        const exitButton = new QPushButton();
+        exitButton.setText("Wyjdź");
+        exitButton.setObjectName("exitButton");
     
         const loadingLabel = new QLabel();
         loadingLabel.setText("");
@@ -73,6 +80,7 @@ class ConnectionScreen extends GuiScreen{
         portInputRowLayout.addWidget(portInput);
     
         connConfLayout.addWidget(connectButton);
+        connConfLayout.addWidget(exitButton);
         connConfLayout.addWidget(loadingLabel);
     
         //events
@@ -84,18 +92,37 @@ class ConnectionScreen extends GuiScreen{
 
             this.#onConnectCallback(addr, port);
         });
+
+        exitButton.addEventListener('clicked', this.#onExitCallback);
     
         //styling
     
         this.#rootView.setStyleSheet(`
         #rootView {
-            width: 100%;
+            width: '100%';
             align-items: 'center';
             justify-content: 'center';
             padding: 5px;
         }
-        #connectButton {
-            width: 120px;
+        #connConfWidget{
+            width: '200px';
+            align-items: 'center';
+        }
+        #row{
+            width: '100%';
+            justify-content: 'space-between';
+        }
+        #connConfTitleLabel{
+            margin-bottom: '10px';
+            font-weight: 600;
+        }
+        #connectButton, #exitButton{
+            width: '100%';
+            margin-top: '10px'
+        }
+        #loadingLabel{
+            margin-top: 10px;
+            width:70%;
         }
         `);
     }

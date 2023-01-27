@@ -34,8 +34,8 @@ class Gui{
      *  onConnectCallback - funkcja która ma zostać wywołana po kliknięciu przycisku 'połącz', powinna przyjmować dwa argumenty: adres i port
      * zwraca obeikt typu ConnectionScreen
      */
-    showConnectScreen(onConnectCallback){
-        const screen = new ConnectionScreen(onConnectCallback);
+    showConnectScreen(onConnectCallback, onExitCallback){
+        const screen = new ConnectionScreen(onConnectCallback, onExitCallback);
         this.#win.setCentralWidget(screen.getWidget());
         return screen;
     }
@@ -71,12 +71,13 @@ class Gui{
     /* wyświetla ekran gry
      * argumenty:
      *  gameId - id gry
+     *  playerId - id gracza
      *  onVoteCallabck - funkcja do wywołania po kliknięciu w przycisk 'zagłosuj', powinna przyjmować dwa argumenty: x i y pola
      *  onExitCallback - funkcja do wywołania po kliknięciu w przycisk 'opuść rozgrywkę', nie powinna przyjmować argumentów
      * zwraca obeikt typu GameScreen
      */
-    showGameScreen(gameId, onVoteCallabck, onExitCallback){
-        const screen = new GameScreen(gameId, onVoteCallabck, onExitCallback)
+    showGameScreen(gameId, playerId, onVoteCallabck, onExitCallback){
+        const screen = new GameScreen(gameId, playerId, onVoteCallabck, onExitCallback)
         this.#win.setCentralWidget(screen.getWidget());
         return screen;
     }
