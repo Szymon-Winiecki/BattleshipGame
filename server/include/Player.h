@@ -3,11 +3,13 @@
 #include <string>
 #include <sstream>
 
+#include "./Message.h"
 #include "./Client.h"
 #include "./Game.h"
 #include "./Vote.h"
 
 class Game;
+class Client;
 
 class Player{
     private:

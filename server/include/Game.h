@@ -11,7 +11,6 @@
 #include <iostream> //tmp
 
 #include "./Player.h"
-#include "./Client.h"
 #include "./Voting.h"
 #include "./ShotVoting.h"
 #include "./Vote.h"
