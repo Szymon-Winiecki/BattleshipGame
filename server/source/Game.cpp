@@ -71,7 +71,14 @@ void Game::nextRound(){
     delete activeVoting;
 
     if(toDelete) return;
-    
+
+    if(maps[1 - currentTeam].allShipsSunk()){   //koniec gry
+        // (type = GAMEOVER, objectId = zwycieska druzyna)
+        Message m = Message(GAMEOVER, std::to_string(currentTeam), "", "");
+        sendToAllPlayers(m);
+        toDelete = true;
+    }
+
     currentTeam = 1 - currentTeam;
     activeVoting = new ShotVoting(getId(), getTeam(currentTeam), roundDuration, &maps[1 - currentTeam]);
     sendNextRoundInfo();

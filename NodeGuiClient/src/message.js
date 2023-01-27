@@ -21,7 +21,8 @@ const MessageType = {
   UPDATEMAP: 17,
   GETROUND: 18,
   STARTGAME: 19,
-  BEOWNER: 20
+  BEOWNER: 20,
+  GAMEOVER: 21
 };
 
 

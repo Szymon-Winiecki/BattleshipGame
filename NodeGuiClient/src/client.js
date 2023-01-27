@@ -325,6 +325,15 @@ class Client{
             case MessageType.STARTGAME:
                 this.#enterGame();
             break;
+            
+            /*
+            MessageType.GAMEOVER - informuje o wygranej jedej z drużyn
+            Dostajemy informacje o:
+             drużyna, która wygrała              (objectId) 
+            */
+            case MessageType.GAMEOVER:
+                this.#onGameOver(parseInt(message.getObjectId()));
+            break;
             default:
               console.log("incorrect message, albo jeszcze nie ustawiona\n");
             break;
@@ -389,6 +398,15 @@ class Client{
 
     #onTeamChanged(newTeam){
         this.#player.team = newTeam;
+    }
+
+    #onGameOver(winner){
+        if(winner == this.#player.team){
+            console.log("WYGRANA");
+        }
+        else{
+            console.log("PRZEGRANA");
+        }  
     }
 
     #updatePlayersList(team, list){

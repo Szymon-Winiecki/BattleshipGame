@@ -119,6 +119,17 @@ bool Map::placeShip(int x, int y, int size, bool horizontal){
     return true;
 }
 
+bool Map::allShipsSunk(){
+    for(int y = 0; y < getSize(); ++y){
+        for(int x = 0; x < getSize(); ++x){
+            if(map[x][y] == FieldStatus::SHIP){
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
 std::string Map::serialize(bool noShips, char delimeter){
     std::stringstream serialized;
     serialized << getSize() << delimeter;
