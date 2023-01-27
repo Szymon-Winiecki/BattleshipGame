@@ -52,6 +52,9 @@ class Client{
 
         this.#lobbyScreen.serverStatusWidget.setStatus(true);
         this.#lobbyScreen.serverStatusWidget.setAddress(this.#serverAddr, this.#serverPort);
+
+        this.#updatePlayersList(0, this.#game.teams[0]);
+        this.#updatePlayersList(1, this.#game.teams[1]);
     }
 
     showGameScreen(){
@@ -59,6 +62,9 @@ class Client{
 
         this.#gameScreen.serverStatusWidget.setStatus(true);
         this.#gameScreen.serverStatusWidget.setAddress(this.#serverAddr, this.#serverPort);
+
+        this.#updatePlayersList(0, this.#game.teams[0]);
+        this.#updatePlayersList(1, this.#game.teams[1]);
     }
 
     /*

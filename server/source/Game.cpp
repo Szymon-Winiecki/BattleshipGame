@@ -15,7 +15,8 @@ Game::Game() :
     isOpen { false },
     started { false },
     owner { nullptr },
-    currentTeam { 0 } {
+    currentTeam { 0 },
+    toDelete (false) {
 
         //ustawienie kilku przykladowych stakow na mapie
         maps[0].placeShip(1, 1, 2, false);
@@ -52,6 +53,14 @@ void Game::start(){
     nextRound();
 }
 
+void Game::close(){
+    isOpen = false;
+}
+
+void Game::deleteNextRound(){
+    toDelete = true;
+}
+
 void Game::nextRound(){
     if(activeVoting != NULL){
         std::string result = activeVoting->getResult();
@@ -60,6 +69,9 @@ void Game::nextRound(){
         shoot(1 - currentTeam, fieldToShot[0], fieldToShot[1]);
     }
     delete activeVoting;
+
+    if(toDelete) return;
+    
     currentTeam = 1 - currentTeam;
     activeVoting = new ShotVoting(getId(), getTeam(currentTeam), roundDuration, &maps[1 - currentTeam]);
     sendNextRoundInfo();
@@ -71,6 +83,9 @@ void Game::runRoundController(){
     std::thread* vct = new std::thread([this] {
 			std::this_thread::sleep_for(std::chrono::milliseconds(this->roundDuration));
             this->nextRound();
+            if(this->toDelete){
+                delete this;
+            }
 	});
 }
 
@@ -217,8 +232,11 @@ Player* Game::changeOwner(){
     else if(this->teams[1].size()>0){
         this->owner = &this->teams[1].front();
     }
-    Message message = Message(BEOWNER,this->getId());
-    this->owner->sendMessage(message);
+
+    if(owner != nullptr){
+        Message message = Message(BEOWNER,this->getId());
+        this->owner->sendMessage(message);
+    }
     return this->owner;
 }
 

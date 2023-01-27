@@ -98,6 +98,7 @@ void Server::addGame(Game* game){
 
 void Server::removeGame(Game* game){
     games.remove(game);
+    game->deleteNextRound();
 }
 
 Game* Server::getGame(std::string id){

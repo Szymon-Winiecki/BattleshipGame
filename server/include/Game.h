@@ -42,6 +42,8 @@ private:
     int currentTeam;
     ShotVoting* activeVoting;
 
+    bool toDelete; //określa czy gra powinna byc usunięta po zakończeniu następnej rundy
+
     void sendResult(std::string &result);
     void sendNextRoundInfo();
     
@@ -63,6 +65,12 @@ public:
 
     /*  rozpoczecie gry - rusza pierwsza runda*/
     void start();
+
+    /*  do zamkniętej gry nie można dołączać*/
+    void close();
+
+    /* usun grę na końcu rundy*/
+    void deleteNextRound();
 
     void setOwner(Player* player);
     Player* getOwner();

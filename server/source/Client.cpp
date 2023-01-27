@@ -161,6 +161,7 @@ void Client::createGame(){
         this->writem(message);
         return;
     }
+
     Game* newGame = new Game();
     server->addGame(newGame);
     Player *player = newGame->join(0);
@@ -203,28 +204,30 @@ void Client::joinGame(std::string id){
 }
 
 void Client::leaveGame(){ 
+
     if(this->player == nullptr){
         Message message = Message(MessageType::ERROR,"Nie jestes w zadnej grze\n");
         this->writem(message);
         return;
     }
-    Game* game = this->getPlayer()->getGame();
-    if(game->getOwner() == this->getPlayer()){
-        this->getPlayer()->getGame()->removeOwner();
-    }
-    this->getPlayer()->getGame()->leave(this->getPlayer()->getTeamId(),this->getPlayer());
-    this->player = nullptr;
-    Message message = Message(MessageType::LEAVE,"Udalo sie wyjsc\n");
-    this->writem(message);
 
-    if(game->getNumberOfPlayers()==0){ 
-        server->removeGame(game); 
+    Game* game = this->getPlayer()->getGame();
+
+    game->leave(player->getTeamId(), player);
+
+    if(game->getNumberOfPlayers() == 0){
+        server->removeGame(game);
+        game = nullptr;
         std::cout<<"usunieto gre\n"<<std::endl;
     }
-    else{
+
+    if(game != nullptr && game->getOwner() == player){
         game->changeOwner();
     }
-
+    this->player = nullptr;
+    
+    Message message = Message(MessageType::LEAVE,"Udalo sie wyjsc\n");
+    this->writem(message);
 }
 
 
