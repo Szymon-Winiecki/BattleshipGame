@@ -14,6 +14,8 @@ Game::Game() :
     maps { Map(6), Map(6)},
     isOpen { false },
     started { false },
+    finished { false },
+    activeVoting { nullptr },
     owner { nullptr },
     currentTeam { 0 },
     toDelete (false) {
@@ -33,6 +35,10 @@ void Game::open(){
 
 bool Game::isStarted(){
     return this->started;
+}
+
+bool Game::isFinished(){
+    return finished;
 }
 
 void Game::start(){
@@ -69,12 +75,14 @@ void Game::endGame(int team){
     // (type = GAMEOVER, objectId = zwycieska druzyna)
     Message m = Message(GAMEOVER, std::to_string(team), "", "");
     sendToAllPlayers(m);
-    toDelete = true;
-    
+    finished = true;
 }
 
 void Game::nextRound(){
-    if(activeVoting != NULL){
+    if(finished){
+        activeVoting = nullptr;
+    }
+    if(activeVoting != nullptr){
         std::string result = activeVoting->getResult();
         sendResult(result);
         std::vector<int> fieldToShot = activeVoting->getDecodedResult();
@@ -84,14 +92,14 @@ void Game::nextRound(){
 
     if(toDelete) return;
 
-    if(maps[1 - currentTeam].allShipsSunk()){   //koniec gry
-        endGame(currentTeam);
-        
+    if(!finished){
+        if(maps[1 - currentTeam].allShipsSunk()){   //koniec gry
+            endGame(currentTeam);
+        }
+         currentTeam = 1 - currentTeam;
+        activeVoting = new ShotVoting(getId(), getTeam(currentTeam), roundDuration, &maps[1 - currentTeam]);
+        sendNextRoundInfo();
     }
-
-    currentTeam = 1 - currentTeam;
-    activeVoting = new ShotVoting(getId(), getTeam(currentTeam), roundDuration, &maps[1 - currentTeam]);
-    sendNextRoundInfo();
 
     runRoundController();
 }

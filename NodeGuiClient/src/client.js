@@ -402,10 +402,10 @@ class Client{
 
     #onGameOver(winner){
         if(winner == this.#player.team){
-            console.log("WYGRANA");
+            this.#gameScreen.roundTimerWidget.setRound(RoundTimerWidget.RoundType.WIN);
         }
         else{
-            console.log("PRZEGRANA");
+            this.#gameScreen.roundTimerWidget.setRound(RoundTimerWidget.RoundType.DEFEAT);
         }  
     }
 
@@ -440,11 +440,7 @@ class Client{
         const x = parseInt(field.substring(0, separatorIndex));
         const y = parseInt(field.substring(separatorIndex + 1));
 
-        console.log(`BEFORE map: ${team}, field: [${x}, ${y}], status: ${this.#game.boards[team].getStatus(x, y)}, new status: ${status}`);
-
         this.#game.boards[team].changeStatus(x, y, status);
-
-        console.log(`AFTER map: ${team}, field: [${x}, ${y}], status: ${this.#game.boards[team].getStatus(x, y)}, new status: ${status}`);
 
         if(this.#gameScreen == undefined) return;
         if(team == this.#player.team){

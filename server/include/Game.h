@@ -39,6 +39,7 @@ private:
 
     bool isOpen;
     bool started;
+    bool finished;
     int currentTeam;
     ShotVoting* activeVoting;
 
@@ -70,6 +71,8 @@ public:
     void close();
 
     bool isStarted();
+
+    bool isFinished();
 
     void endGame(int team);
 

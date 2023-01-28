@@ -140,15 +140,8 @@ void Client::readm(uint32_t events){
 
 void Client::remove() {
     printf("==Usunieto klienta o FD: %d\n", _fd);
-    if (this->player != nullptr && this->player->getGame()!=nullptr) {
-         if(this->player->getGame()!=nullptr && this->player->getGame()->getNumberOfPlayers()==1){ //jezeli byl jedynym graczem
-            printf("--Usunieto gre o ID: %s\n", player->getGame()->getId().c_str());
-            this->server->removeGame(this->player->getGame()); 
-        }
-        else if(this->player->getGame()!=nullptr && this->player->getGame()->getTeam(player->getTeamId())->size()==1 && player->getGame()->isStarted()){ //jezeli byl jedynym graczem w swojej druzynie
-            this->player->getGame()->endGame(1-player->getTeamId());
-        }
-        this->player->getGame()->leave(this->getPlayer()->getTeamId(), this->getPlayer());
+    if (this->player != nullptr && this->player->getGame() != nullptr) {
+        leaveGame();
     }
     server->removeClient(this);
     delete this;
@@ -167,11 +160,11 @@ void Client::createGame(){
 
     Game* newGame = new Game();
     server->addGame(newGame);
-    Player *player = newGame->join(0);
-    player->setClient(this);
-    player->setGame(newGame);
-    this->setPlayer(player);
-    newGame->setOwner(player);
+    Player *newPlayer = newGame->join(0);
+    newPlayer->setClient(this);
+    newPlayer->setGame(newGame);
+    this->setPlayer(newPlayer);
+    newGame->setOwner(newPlayer);
     Message message = Message(MessageType::CREATE,newGame->getId(),player->getId(),std::to_string(player->getTeamId()));
     this->writem(message);
 
@@ -197,17 +190,17 @@ void Client::joinGame(std::string id){
         return;
     }
 
-    Player *player = game->join(0);
-    if(player==NULL){
+    Player *newPlayer = game->join(0);
+    if(newPlayer==NULL){
         Message message = Message(MessageType::ERROR,"Lobby jest pelne\n");
         this->writem(message);
         return;
     }
-    player->setClient(this);
-    player->setGame(game);
-    this->setPlayer(player);
+    newPlayer->setClient(this);
+    newPlayer->setGame(game);
+    this->setPlayer(newPlayer);
     //message(typ,id gry,id gracza,nr druzyny)
-    Message message = Message(MessageType::JOIN, game->getId(), player->getId(), std::to_string(player->getTeamId()));
+    Message message = Message(MessageType::JOIN, game->getId(), newPlayer->getId(), std::to_string(newPlayer->getTeamId()));
     this->writem(message);
     this->showPlayers();
 }
@@ -219,7 +212,7 @@ void Client::leaveGame(){
         this->writem(message);
         return;
     }
-    if(this->player->getGame()!=nullptr){
+    if(this->player->getGame() != nullptr){
         Game* game = this->getPlayer()->getGame();
 
         game->leave(player->getTeamId(), player);
@@ -234,7 +227,7 @@ void Client::leaveGame(){
             game->endGame(1-player->getTeamId());
         }
 
-        if(game != nullptr && game->getOwner() == player){
+        if(game != nullptr && !game->isFinished() && game->getOwner() == player){
             game->changeOwner();
         }
     }
