@@ -40,6 +40,7 @@ class GameScreen extends GuiScreen{
         const [gameView, gameViewLayout] = guiLayout.Column("game");
         const [statusRow, statusRowLayout] = guiLayout.Row("statusRow");
         const [mainRow, mainRowLayout] = guiLayout.Row("mainRow");
+        const [legendRow, legendRowLayout] = guiLayout.Column("legendRow");
         const [yourBoardCol, yourBoardColLayout] = guiLayout.Column("boardRow");
         const [opponentBoardCol, opponentBoardColLayout] = guiLayout.Column("boardRow");
         const [teamsRow, teamsRowLayout] = guiLayout.Row("teams");
@@ -58,6 +59,31 @@ class GameScreen extends GuiScreen{
         this.roundTimerWidget = new RoundTimerWidget();
 
         //tutaj zrobić legendę 
+        const legendLabel = new QLabel();
+        legendLabel.setText("Legenda:");
+        legendLabel.setObjectName("legendLabel");
+
+        const legendLabel0 = new QLabel();
+        legendLabel0.setText("twoj statek");
+        legendLabel0.setObjectName("ship");
+
+        const legendLabel1 = new QLabel();
+        legendLabel1.setText("nieodkryty");
+        legendLabel1.setObjectName("clear");
+
+        const legendLabel2 = new QLabel();
+        legendLabel2.setText("trafiony");
+        legendLabel2.setObjectName("hit");
+
+        const legendLabel3 = new QLabel();
+        legendLabel3.setText("nietrafiony");
+        legendLabel3.setObjectName("miss");
+
+        const legendLabel4 = new QLabel();
+        legendLabel4.setText("zatopiony");
+        legendLabel4.setObjectName("sunk");
+
+    
 
         const yourBoardLabel = new QLabel();
         yourBoardLabel.setText('twoja plansza');
@@ -90,8 +116,16 @@ class GameScreen extends GuiScreen{
         gameViewLayout.addWidget(exitButton);
 
         statusRowLayout.addWidget(playerIdLabel);
+        statusRowLayout.addWidget(legendRow);
         statusRowLayout.addWidget(this.serverStatusWidget.getWidget());
         statusRowLayout.addWidget(gameIdLabel);
+
+        legendRowLayout.addWidget(legendLabel);
+        legendRowLayout.addWidget(legendLabel0);
+        legendRowLayout.addWidget(legendLabel1);
+        legendRowLayout.addWidget(legendLabel2);
+        legendRowLayout.addWidget(legendLabel3);
+        legendRowLayout.addWidget(legendLabel4);
 
         mainRowLayout.addWidget(yourBoardCol);
         mainRowLayout.addWidget(opponentBoardCol);
@@ -132,6 +166,21 @@ class GameScreen extends GuiScreen{
         }
         #boardRow{
             align-items: 'center';
+        }
+        #clear{
+            color: 'blue';
+        }
+        #hit{
+            color: 'red';
+        }
+        #miss{
+            color: 'grey';
+        }
+        #sunk{
+            color: 'black';
+        }
+        #ship{
+            color: green;
         }
         `);
     }

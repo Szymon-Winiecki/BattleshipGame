@@ -31,6 +31,10 @@ void Game::open(){
     isOpen = true;
 }
 
+bool Game::isStarted(){
+    return this->started;
+}
+
 void Game::start(){
     started = true;
     startTime = std::chrono::duration_cast< std::chrono::milliseconds >(std::chrono::system_clock::now().time_since_epoch()).count();
@@ -61,6 +65,14 @@ void Game::deleteNextRound(){
     toDelete = true;
 }
 
+void Game::endGame(int team){
+    // (type = GAMEOVER, objectId = zwycieska druzyna)
+    Message m = Message(GAMEOVER, std::to_string(team), "", "");
+    sendToAllPlayers(m);
+    toDelete = true;
+    
+}
+
 void Game::nextRound(){
     if(activeVoting != NULL){
         std::string result = activeVoting->getResult();
@@ -73,10 +85,8 @@ void Game::nextRound(){
     if(toDelete) return;
 
     if(maps[1 - currentTeam].allShipsSunk()){   //koniec gry
-        // (type = GAMEOVER, objectId = zwycieska druzyna)
-        Message m = Message(GAMEOVER, std::to_string(currentTeam), "", "");
-        sendToAllPlayers(m);
-        toDelete = true;
+        endGame(currentTeam);
+        
     }
 
     currentTeam = 1 - currentTeam;

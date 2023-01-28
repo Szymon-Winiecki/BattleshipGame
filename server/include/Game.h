@@ -69,6 +69,10 @@ public:
     /*  do zamkniętej gry nie można dołączać*/
     void close();
 
+    bool isStarted();
+
+    void endGame(int team);
+
     /* usun grę na końcu rundy*/
     void deleteNextRound();
 

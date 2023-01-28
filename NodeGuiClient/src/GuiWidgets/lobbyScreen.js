@@ -76,6 +76,7 @@ class lobbyScreen extends GuiScreen{
         this.opponentTeamList.setTitle("Druzyna 2");
 
         this.numberOfReadyPlayersc = new QLabel();
+
     
         //add widgets to layouts
     
@@ -92,6 +93,7 @@ class lobbyScreen extends GuiScreen{
             lobbyViewLayout.addWidget(startButton);
             startButton.addEventListener('clicked', this.#onStartGameCallback);
         }
+        
         lobbyViewLayout.addWidget(exitButton);
 
 
@@ -132,6 +134,10 @@ class lobbyScreen extends GuiScreen{
             height: '60%';
             width: '50%';
             padding-bottom: 80px;
+        }
+        #starterror{
+            color: red;
+            width: 370px;
         }
         `);
     }

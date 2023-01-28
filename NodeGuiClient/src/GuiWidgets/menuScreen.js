@@ -13,6 +13,8 @@ class MenuScreen extends GuiScreen{
     #onChangeServerCallback;
     #onExitCallback;
 
+
+
     constructor(onCreateCallback, onJoinCallback, onChangeServerCallback, onExitCallback){
         super();
 
@@ -20,6 +22,7 @@ class MenuScreen extends GuiScreen{
         this.#onJoinCallback = onJoinCallback;
         this.#onChangeServerCallback = onChangeServerCallback;
         this.#onExitCallback = onExitCallback;
+
 
         this.#init();
     }
@@ -61,6 +64,14 @@ class MenuScreen extends GuiScreen{
     
         const exitButton = new QPushButton();
         exitButton.setText("wyjdź");
+
+        const nogameLabel = new QLabel();
+        nogameLabel.setText("");
+        nogameLabel.setObjectName("nogameLabel");
+
+        const errorCreateLabel = new QLabel();
+        errorCreateLabel.setText("");
+        errorCreateLabel.setObjectName("errorCreateLabel");
     
         //add widgets to layouts
     
@@ -68,10 +79,12 @@ class MenuScreen extends GuiScreen{
 
         createGameRowLayout.addWidget(createGameLabel);
         createGameRowLayout.addWidget(createGameButton);
+        createGameRowLayout.addWidget(errorCreateLabel);
 
         joinGameRowLayout.addWidget(joinGameLabel);
         joinGameRowLayout.addWidget(joinGameInput);
         joinGameRowLayout.addWidget(joinGameButtton);
+        joinGameRowLayout.addWidget(nogameLabel);
 
         changeServerRowLayout.addWidget(changeServerLabel);
         changeServerRowLayout.addWidget(changeServerButton);
@@ -86,11 +99,13 @@ class MenuScreen extends GuiScreen{
 
         createGameButton.addEventListener('clicked', () => {
             this.#onCreateCallback();
+            errorCreateLabel.setText("Błąd przy tworzeniu gry");
         });
 
         joinGameButtton.addEventListener('clicked', () => {
             const gameId = joinGameInput.text();
             this.#onJoinCallback(gameId);
+            nogameLabel.setText('Nie mozna dolaczyc');
         });
 
         changeServerButton.addEventListener('clicked', () => {
@@ -112,6 +127,14 @@ class MenuScreen extends GuiScreen{
         #menu{
             height: '60%';
             justify-content: 'space-around';
+        }
+        #nogameLabel{
+            color: red;
+            padding-left: 10px;
+        }
+        #errorCreateLabel{
+            color: red;
+            padding-left: 10px;
         }
         `);
     }

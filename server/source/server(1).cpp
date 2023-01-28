@@ -1,10 +1,43 @@
-#include "../include/Client.h"
-#include "../include/Server.h"
-#include "../include/Player.h"
+#include "../include/server.h"
+#include <iostream>
 
-Client::Client(int fd, Server* server) : _fd(fd), server{server}, player{nullptr} {
+int servFd;
+int epollFd;
+
+std::unordered_set<Client*> clients;
+
+std::list<Game*> games;
+
+/*HANDLER DO OBSLUGI NOWEGO POLACZENIA*/
+
+class : Handler {
+    public:
+    virtual void handleEvent(uint32_t events) override {
+        if(events & EPOLLIN){
+
+            sockaddr_in clientAddr{};
+            socklen_t clientAddrSize = sizeof(clientAddr);
+            
+            auto clientFd = accept(servFd, (sockaddr*) &clientAddr, &clientAddrSize);
+            if(clientFd == -1) error(1, errno, "accept failed");
+            
+            printf("new connection from: %s:%hu (fd: %d)\n", inet_ntoa(clientAddr.sin_addr), ntohs(clientAddr.sin_port), clientFd);
+
+            clients.insert(new Client(clientFd));
+          
+        }
+        if(events & ~EPOLLIN){
+            error(0, errno, "Event %x on server socket", events);
+            ctrl_c(SIGINT);
+        }
+    }
+} servHandler;
+
+
+/*FUNKCJE KLASY KLIENTA NA SERWERZE (POZNIEJ PEWNIE PRZENIESIONE CO CLIENT.CPP)*/
+Client::Client(int fd) : _fd(fd), player{nullptr} {
         epoll_event ee {EPOLLIN|EPOLLRDHUP, {.ptr=this}};
-        epoll_ctl(server->getEpollFd(), EPOLL_CTL_ADD, _fd, &ee);
+        epoll_ctl(epollFd, EPOLL_CTL_ADD, _fd, &ee);
 
         Message message = Message(MessageType::INFO,"Witamy na serwerze!");
         this->writem(message);
@@ -14,7 +47,7 @@ Client::Client(int fd, Server* server) : _fd(fd), server{server}, player{nullptr
     }
 
 Client::~Client(){
-    epoll_ctl(server->getEpollFd(), EPOLL_CTL_DEL, _fd, nullptr);
+    epoll_ctl(epollFd, EPOLL_CTL_DEL, _fd, nullptr);
     shutdown(_fd, SHUT_RDWR);
     close(_fd);
 }
@@ -106,6 +139,7 @@ void Client::handleEvent(uint32_t events){
                         this->writem(message);
                         break;
                     }
+
                     if(this->getPlayer()->getGame()->getTeam(0)->size()<1 || this->getPlayer()->getGame()->getTeam(1)->size()<1){
                         Message message = Message(MessageType::ERROR,"W obu druzynach musi byc przynajmniej jeden gracz!\n");
                         this->writem(message);
@@ -139,24 +173,26 @@ void Client::readm(uint32_t events){
 }
 
 void Client::remove() {
-    printf("==Usunieto klienta o FD: %d\n", _fd);
-    if (this->player != nullptr && this->player->getGame()!=nullptr) {
-         if(this->player->getGame()!=nullptr && this->player->getGame()->getNumberOfPlayers()==1){ //jezeli byl jedynym graczem
-            printf("--Usunieto gre o ID: %s\n", player->getGame()->getId().c_str());
-            this->server->removeGame(this->player->getGame()); 
+    printf("removing %d\n", _fd);
+    if (this->player != nullptr) {
+        if(this->player->getGame()->getNumberOfPlayers()==1){ //jezeli byl jedynym graczem
+            games.remove(this->player->getGame()); 
+            std::cout<<"usunieto gre\n"<<std::endl;
         }
-        else if(this->player->getGame()!=nullptr && this->player->getGame()->getTeam(player->getTeamId())->size()==1 && player->getGame()->isStarted()){ //jezeli byl jedynym graczem w swojej druzynie
-            this->player->getGame()->endGame(1-player->getTeamId());
-        }
-        this->player->getGame()->leave(this->getPlayer()->getTeamId(), this->getPlayer());
+        this->getPlayer()->getGame()->leave(this->getPlayer()->getTeamId(), this->getPlayer());
     }
-    server->removeClient(this);
+    clients.erase(this);
     delete this;
 }
+
+
+
 
 void Client::setPlayer(Player* player){
     this->player=player;
 }
+
+
 
 void Client::createGame(){ 
     if(this->getPlayer() != nullptr){
@@ -164,9 +200,8 @@ void Client::createGame(){
         this->writem(message);
         return;
     }
-
     Game* newGame = new Game();
-    server->addGame(newGame);
+    games.push_back(newGame);
     Player *player = newGame->join(0);
     player->setClient(this);
     player->setGame(newGame);
@@ -183,65 +218,50 @@ void Client::joinGame(std::string id){
         this->writem(message);
         return;
     }
-    Game* game = server->getGame(id);
-
-    if(game == nullptr){
-        Message message = Message(MessageType::ERROR,"Nie ma gry o takim id\n");
-        this->writem(message);
-        return;
+    for (auto const i : games) {
+        if(i->getId() == id){
+            Player *player = i->join(0);
+            if(player==NULL){
+                Message message = Message(MessageType::ERROR,"Lobby jest pelne\n");
+                this->writem(message);
+                return;
+            }
+            player->setClient(this);
+            player->setGame(i);
+            this->setPlayer(player);
+            //message(typ,id gry,id gracza,nr druzyny)
+            Message message = Message(MessageType::JOIN,i->getId(),player->getId(),std::to_string(player->getTeamId()));
+            this->writem(message);
+            this->showPlayers();
+            return;
+        }
     }
-
-    if(game->isStarted()){
-        Message message = Message(MessageType::ERROR,"Nie mozna dolaczyc, gra sie juz rozpoczela.\n");
-        this->writem(message);
-        return;
-    }
-
-    Player *player = game->join(0);
-    if(player==NULL){
-        Message message = Message(MessageType::ERROR,"Lobby jest pelne\n");
-        this->writem(message);
-        return;
-    }
-    player->setClient(this);
-    player->setGame(game);
-    this->setPlayer(player);
-    //message(typ,id gry,id gracza,nr druzyny)
-    Message message = Message(MessageType::JOIN, game->getId(), player->getId(), std::to_string(player->getTeamId()));
+    Message message = Message(MessageType::ERROR,"Nie ma gry o takim id\n");
     this->writem(message);
-    this->showPlayers();
 }
 
 void Client::leaveGame(){ 
-
     if(this->player == nullptr){
         Message message = Message(MessageType::ERROR,"Nie jestes w zadnej grze\n");
         this->writem(message);
         return;
     }
-    if(this->player->getGame()!=nullptr){
-        Game* game = this->getPlayer()->getGame();
-
-        game->leave(player->getTeamId(), player);
-
-        if(game->getNumberOfPlayers() == 0){
-            std::cout<<"--Usunieto gre o ID: "<<game->getId()<<std::endl;
-            server->removeGame(game);
-            game = nullptr;
-        }
-
-        if(game != nullptr && game->getTeam(player->getTeamId())->size()==0 && game->isStarted()){ //jezeli brak graczy w jednej druzynie
-            game->endGame(1-player->getTeamId());
-        }
-
-        if(game != nullptr && game->getOwner() == player){
-            game->changeOwner();
-        }
+    Game* game = this->getPlayer()->getGame();
+    if(game->getOwner()==this->getPlayer()){
+        this->getPlayer()->getGame()->removeOwner();
     }
+    this->getPlayer()->getGame()->leave(this->getPlayer()->getTeamId(),this->getPlayer());
     this->player = nullptr;
-    
     Message message = Message(MessageType::LEAVE,"Udalo sie wyjsc\n");
     this->writem(message);
+    if(game->getNumberOfPlayers()==0){ 
+        games.remove(game); 
+        std::cout<<"usunieto gre\n"<<std::endl;
+    }
+    else{
+        game->changeOwner();
+    }
+
 }
 
 
@@ -259,3 +279,68 @@ void Client::showPlayers(){
     Message message2 = this->player->getGame()->currentTeamInfo(1);
     this->writem(message2);
 }
+
+
+
+
+/*FUNKCJA GLOWNA SERWERA*/
+void run(int argc, char ** argv){
+    if(argc != 2) error(1, 0, "Need 1 arg (port)");
+    auto port = readPort(argv[1]);
+    
+    servFd = socket(AF_INET, SOCK_STREAM, 0);
+    if(servFd == -1) error(1, errno, "socket failed");
+    
+    signal(SIGINT, ctrl_c);
+    signal(SIGPIPE, SIG_IGN);
+    
+    setReuseAddr(servFd);
+    
+    sockaddr_in serverAddr{.sin_family=AF_INET, .sin_port=htons((short)port), .sin_addr={INADDR_ANY}};
+    int res = bind(servFd, (sockaddr*) &serverAddr, sizeof(serverAddr));
+    if(res) error(1, errno, "bind failed");
+    
+    res = listen(servFd, 1);
+    if(res) error(1, errno, "listen failed");
+
+    epollFd = epoll_create1(0);
+    
+    epoll_event ee {EPOLLIN, {.ptr=&servHandler}};
+    epoll_ctl(epollFd, EPOLL_CTL_ADD, servFd, &ee);
+    
+    while(true){
+        if(-1 == epoll_wait(epollFd, &ee, 1, -1)) {
+            error(0,errno,"epoll_wait failed");
+            ctrl_c(SIGINT);
+        }
+        ((Handler*)ee.data.ptr)->handleEvent(ee.events);
+    }
+}
+
+/*ROZNE DODATKOWE FUNKCJE*/
+uint16_t readPort(char * txt){
+    char * ptr;
+    auto port = strtol(txt, &ptr, 10);
+    if(*ptr!=0 || port<1 || (port>((1<<16)-1))) error(1,0,"illegal argument %s", txt);
+    return port;
+}
+
+void setReuseAddr(int sock){
+    const int one = 1;
+    int res = setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one));
+    if(res) error(1,errno, "setsockopt failed");
+}
+
+void ctrl_c(int){
+    //zrobic tu informowanie klientow o zamknieciu serwera ASAP
+    Message message = Message(SERVERERROR);
+    for(Client * client : clients){
+        client->writem(message);
+        delete client;
+    }
+    printf("Closing server\n");
+    close(servFd);
+    exit(0);
+}
+
+

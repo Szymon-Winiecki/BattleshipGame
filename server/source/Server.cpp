@@ -110,7 +110,7 @@ Game* Server::getGame(std::string id){
     return nullptr;
 }
 
-/*ROZNE DODATKOWE FUNKCJE*/
+
 uint16_t Server::readPort(char * txt){
     char * ptr;
     auto port = strtol(txt, &ptr, 10);
