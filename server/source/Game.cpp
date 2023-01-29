@@ -8,6 +8,7 @@ std::string Game::generateId(){
 }
 
 Game::Game() :
+
     gameId { generateId() },
     maxPlayers { 8 },
     roundDuration {10 * 1000}, // 10s
@@ -20,11 +21,12 @@ Game::Game() :
     currentTeam { 0 },
     toDelete (false) {
 
-        //ustawienie kilku przykladowych stakow na mapie
-        maps[0].placeShip(1, 1, 2, false);
-        maps[0].placeShip(3, 2, 3, true);
-        maps[1].placeShip(1, 4, 2, true);
-        maps[1].placeShip(4, 1, 3, false);
+        maps[0].placeShip(3);
+        maps[0].placeShip(2);
+        maps[0].placeShip(1);
+        maps[1].placeShip(3);
+        maps[1].placeShip(2);
+        maps[1].placeShip(1);
 
         open();
     }
@@ -94,10 +96,11 @@ void Game::nextRound(){
 
     if(maps[1 - currentTeam].allShipsSunk()){   //koniec gry
         endGame(currentTeam);
-    }	
+    }
 
     if(!finished){
-        currentTeam = 1 - currentTeam;
+        
+         currentTeam = 1 - currentTeam;
         activeVoting = new ShotVoting(getId(), getTeam(currentTeam), roundDuration, &maps[1 - currentTeam]);
         sendNextRoundInfo();
     }
@@ -184,15 +187,19 @@ void Game::leave(int team, Player* player){
     teams[team].remove(*player);
 
     sendCurrentTeams();
+    /*Message message1 = Message(PLAYERLEFT,player->getGame()->getId(),player->getId(),std::to_string(player->getTeamId()));
+    sendToAllPlayers(message1); */
 }
 
 void Game::changeTeam(int team, Player* player){
-    teams[1-team].remove(*player);
+    this->leave(1-team, player);
+    player->setTeamId(team);
     teams[team].push_front(*player);
 
-    player->setTeamId(team);
+    sendCurrentTeams();
+    /*Message message1 = Message(CHANGETEAM,player->getGame()->getId(),player->getId(),std::to_string(player->getTeamId()));
+    sendToAllPlayers(message1);      */          
 
-    sendCurrentTeams();       
 }
 
 std::string Game::getId(){
@@ -215,7 +222,7 @@ void Game::assertTeam(int team){
 }
 
 bool Game::vote(Vote &vote){
-    if(activeVoting == nullptr) return false;
+    if(activeVoting == NULL) return false;
     return activeVoting->vote(vote);
 }
 

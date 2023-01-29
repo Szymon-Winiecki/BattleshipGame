@@ -10,12 +10,15 @@
 #include <thread>
 #include <iostream> //tmp
 
+
 #include "./Player.h"
 #include "./Voting.h"
 #include "./ShotVoting.h"
 #include "./Vote.h"
 #include "./Map.h"
 #include "./Message.h"
+
+
 
 
 class Player;

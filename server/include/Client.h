@@ -39,9 +39,6 @@ class Client{
         void createGame();
         void joinGame(std::string id);
         void leaveGame(); 
-        void changeTeam();
-        void getMap(int team);
-        void startGame();
 
         void setPlayer(Player* player);
         void showPlayers();

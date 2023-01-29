@@ -52,7 +52,7 @@ FieldStatus Map::shoot(int x, int y){
                 ship.push_back({i, y});
             }
         }
-        for(int i = x-1; i > 0 && sunk; --i){
+        for(int i = x-1; i >= 0 && sunk; --i){
             if(map[i][y] == FieldStatus::SHIP){
                 sunk = false;
             }
@@ -74,7 +74,7 @@ FieldStatus Map::shoot(int x, int y){
                 ship.push_back({x, i});
             }
         }
-        for(int i = y-1; i > 0 && sunk; --i){
+        for(int i = y-1; i >= 0 && sunk; --i){
             if(map[x][i] == FieldStatus::SHIP){
                 sunk = false;
             }
@@ -97,9 +97,9 @@ FieldStatus Map::shoot(int x, int y){
     return next;
 }
 
-bool Map::placeShip(int x, int y, int size, bool horizontal){
+void Map::placeShip(int size){
 
-    if(!validCoords(x, y)) return false;
+    /*if(!validCoords(x, y)) return false;
 
     if(horizontal){
         if(!validCoords(x + size, y)) return false;
@@ -116,7 +116,26 @@ bool Map::placeShip(int x, int y, int size, bool horizontal){
         }
     }
     
-    return true;
+    return true;*/
+
+    bool horizontal = rand() % 2;
+    int row = rand() % this->getSize();
+    int col = rand() % this->getSize();
+    if (validCoords1(row, col, size, horizontal)) {
+        if (horizontal) {
+            for (int i = col; i < col + size; i++) {
+                map[row][i] = FieldStatus::SHIP;
+            }
+        } 
+        else {
+            for (int i = row; i < row + size; i++) {
+                map[i][col] = FieldStatus::SHIP;
+            }
+        }
+    } 
+    else {
+        placeShip(size);
+    }
 }
 
 bool Map::allShipsSunk(){
@@ -172,4 +191,62 @@ bool Map::validCoords(int x, int y){
         return false;
     }
     return true;
+}
+
+/*bool Map::XvalidCoords(int row, int col, int size, bool isHorizontal){  ///inne validCoords ktore nie ma sprawdzania czy statki stoja obok siebie -- do usuniecia
+    if (isHorizontal) {
+    if (col + size > this->getSize()) {
+      return false;
+    }
+    for (int i = col; i < col + size; i++) {
+      if (map[row][i] != FieldStatus::CLEAR) {
+        return false;
+      }
+    }
+  } else {
+    if (row + size > this->getSize()) {
+      return false;
+    }
+    for (int i = row; i < row + size; i++) {
+      if (map[i][col] != FieldStatus::CLEAR) {
+        return false;
+      }
+    }
+  }
+  return true;
+
+}*/
+
+bool Map::validCoords1(int row, int col, int size, bool horizontal) {
+  if (horizontal) {
+    if (col + size + 1 > this->getSize()) {
+      return false;
+    }
+    for (int i = col - 1; i < col + size + 1; i++) {
+      for (int j = row - 1; j <= row + 1; j++) {
+        if (i < 0 || i >= this->getSize() || j < 0 || j >= this->getSize()) {
+          continue;
+        }
+        if (map[j][i] != FieldStatus::CLEAR) {
+          return false;
+        }
+      }
+    }
+  } 
+  else {
+    if (row + size + 1 > this->getSize()) {
+      return false;
+    }
+    for (int i = row - 1; i < row + size + 1; i++) {
+      for (int j = col - 1; j <= col + 1; j++) {
+        if (i < 0 || i >= this->getSize() || j < 0 || j >= this->getSize()) {
+          continue;
+        }
+        if (map[i][j] != FieldStatus::CLEAR) {
+          return false;
+        }
+      }
+    }
+  }
+  return true;
 }

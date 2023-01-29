@@ -19,6 +19,7 @@ class Map
 private:
     std::vector<std::vector<FieldStatus>> map;
     bool validCoords(int x, int y);
+    bool validCoords1(int row, int col, int size, bool isHorizontal);
 public:
     /*  tworzy mape o wymiarach size x size*/
     Map(int size);
@@ -35,8 +36,9 @@ public:
 
     /*  stawia statek na planszy, jezeli argument horizontal == true, to statek ustawiony jest poziomo, zaczynajac od pola [x,y] w prawo,
         natomiast jezeli horizontal == false, to statek ustawiony jest pionowo od pola [x,y] w dół. size okresla dlugosc statku.
-        Jezeli statek nie miesci sie na planszy, zwracana jest wartosc false, w przeciwnym wypadku true*/
-    bool placeShip(int x, int y, int size, bool horizontal);
+        -------->Jezeli statek nie miesci sie na planszy, zwracana jest wartosc false, w przeciwnym wypadku true--chyba nie sprawdzamy tego i tak?chyba ze dodamy------*/
+    //void placeShip(int x, int y, int size, bool horizontal);
+    void placeShip(int size);
 
     bool allShipsSunk();
 
@@ -46,4 +48,5 @@ public:
 
     /*  zwraca mape w postaci czetelnej dla czlowieka - cyfry zastapione sa znakami i dodane sa znaki nowej linii miedzy wierszami*/
     std::string print(bool noShips, char delimeter);
+
 };
