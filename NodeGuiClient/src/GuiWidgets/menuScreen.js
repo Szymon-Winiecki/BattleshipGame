@@ -1,4 +1,4 @@
-const { QLabel, FlexLayout, QWidget, QLineEdit, QPushButton } = require("@nodegui/nodegui");
+const { QLabel, FlexLayout, QWidget, QLineEdit, QPushButton, QKeyEvent } = require("@nodegui/nodegui");
 
 const GuiScreen = require("./guiScreen");
 const guiLayout = require("./guiLayout");
@@ -52,6 +52,18 @@ class MenuScreen extends GuiScreen{
         joinGameLabel.setText("Dołącz do gry o id: ");
     
         const joinGameInput = new QLineEdit();
+
+        joinGameInput.addEventListener('KeyPress', (nativeEvent) => {
+            const event = new QKeyEvent(nativeEvent);
+            const key = event.key();
+            if(key == 38 || key == 123 || key == 124 || key == 125){ //'&', '{', '|', '}'
+                event.ignore();
+                joinGameInput.setEventProcessed(true);
+            }
+            else{
+                event.accept();
+            }
+          });
     
         const joinGameButtton = new QPushButton();
         joinGameButtton.setText("dołącz");
