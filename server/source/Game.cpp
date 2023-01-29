@@ -99,8 +99,7 @@ void Game::nextRound(){
     }
 
     if(!finished){
-        
-         currentTeam = 1 - currentTeam;
+        currentTeam = 1 - currentTeam;
         activeVoting = new ShotVoting(getId(), getTeam(currentTeam), roundDuration, &maps[1 - currentTeam]);
         sendNextRoundInfo();
     }
@@ -187,19 +186,14 @@ void Game::leave(int team, Player* player){
     teams[team].remove(*player);
 
     sendCurrentTeams();
-    /*Message message1 = Message(PLAYERLEFT,player->getGame()->getId(),player->getId(),std::to_string(player->getTeamId()));
-    sendToAllPlayers(message1); */
 }
 
 void Game::changeTeam(int team, Player* player){
-    this->leave(1-team, player);
+    teams[1 -team].remove(*player);
     player->setTeamId(team);
     teams[team].push_front(*player);
 
     sendCurrentTeams();
-    /*Message message1 = Message(CHANGETEAM,player->getGame()->getId(),player->getId(),std::to_string(player->getTeamId()));
-    sendToAllPlayers(message1);      */          
-
 }
 
 std::string Game::getId(){

@@ -63,37 +63,16 @@ void Client::handleEvent(uint32_t events){
                     this->leaveGame();
                 break;}
                 case CHANGETEAM:{
-                    if(this->getPlayer()->getTeamId() == atoi(message.getParam1().c_str())){
-                        Message errmessage = Message(MessageType::ERROR,"Juz jestes w tej druzynie\n");
-                        this->writem(errmessage);
-                        break;
-                    }
-                    this->getPlayer()->getGame()->changeTeam(atoi(message.getParam1().c_str()),this->getPlayer());
-                    Message m = Message(MessageType::CHANGETEAM, std::to_string(this->getPlayer()->getTeamId()));
-                    this->writem(m);
+                    this->changeTeam();
                 break;}
                 case GETMAP:{
                     int team = atoi(message.getParam1().c_str());
-                    if(getPlayer() == NULL || getPlayer()->getGame() == NULL){
-                        Message message = Message(MessageType::ERROR,"Aby pobrac mape musisz byc w grze\n");
-                        this->writem(message);
-                        break;
-                    }
-                    if(team < 0 || team > 1){
-                        Message message = Message(MessageType::ERROR,"Sa tylko dwie druzyny: 0 i 1\n");
-                        this->writem(message);
-                        break;
-                    }
-                    bool showShips = false;
-                    if(getPlayer()->getTeamId() == team) showShips = true;
-                    Message message = Message(MessageType::GETMAP, std::to_string(team), getPlayer()->getGame()->getSerializedMap(team, showShips), "");
-                    this->writem(message);
+                    this->getMap(team);
                 break;}
                 case SHOWTEAMS:{
                     this->showPlayers();
                 break;}
                 case VOTE:
-                    std::cout << message.encode() << std::endl;
                     this->getPlayer()->vote(message.getObjectId(), message.getParam1());
                 break;
                 case GETROUND:{
@@ -101,17 +80,7 @@ void Client::handleEvent(uint32_t events){
                     getPlayer()->sendMessage(m);
                 break;}
                 case STARTGAME:
-                    if(getPlayer() != getPlayer()->getGame()->getOwner()){
-                        Message message = Message(MessageType::ERROR,"Tylko wlasciciel moze rozpoczac gre\n");
-                        this->writem(message);
-                        break;
-                    }
-                    if(this->getPlayer()->getGame()->getTeam(0)->size()<1 || this->getPlayer()->getGame()->getTeam(1)->size()<1){
-                        Message message = Message(MessageType::ERROR,"W obu druzynach musi byc przynajmniej jeden gracz!\n");
-                        this->writem(message);
-                        break;
-                    }
-                    getPlayer()->getGame()->start();
+                    this->startGame();
                 break;
                 default:
                     events |= EPOLLERR;
@@ -167,7 +136,7 @@ void Client::createGame(){
     newGame->setOwner(newPlayer);
     Message message = Message(MessageType::CREATE,newGame->getId(),player->getId(),std::to_string(player->getTeamId()));
     this->writem(message);
-
+    this->showPlayers();
 }
 
 void Client::joinGame(std::string id){
@@ -237,7 +206,49 @@ void Client::leaveGame(){
     this->writem(message);
 }
 
+void Client::changeTeam(){
+    if(this->getPlayer() == nullptr){
+        Message errmessage = Message(MessageType::ERROR,"Musisz być w grze aby zmienic druzyne\n");
+        this->writem(errmessage);
+        return;
+    }
 
+    int newTeam = 1 - this->getPlayer()->getTeamId();
+    this->getPlayer()->getGame()->changeTeam(newTeam, this->getPlayer());
+
+    Message m = Message(MessageType::CHANGETEAM, std::to_string(this->getPlayer()->getTeamId()));
+    this->writem(m);
+}
+
+void Client::getMap(int team){
+    if(getPlayer() == NULL || getPlayer()->getGame() == NULL){
+        Message message = Message(MessageType::ERROR,"Aby pobrac mape musisz byc w grze\n");
+        this->writem(message);
+        return;
+    }
+    if(team < 0 || team > 1){
+        Message message = Message(MessageType::ERROR,"Sa tylko dwie druzyny: 0 i 1\n");
+        this->writem(message);
+        return;
+    }
+    bool showShips = getPlayer()->getTeamId() == team;
+    Message message = Message(MessageType::GETMAP, std::to_string(team), getPlayer()->getGame()->getSerializedMap(team, showShips), "");
+    this->writem(message);
+}  
+
+void Client::startGame(){
+    if(getPlayer() != getPlayer()->getGame()->getOwner()){
+        Message message = Message(MessageType::ERROR,"Tylko wlasciciel moze rozpoczac gre\n");
+        this->writem(message);
+        return;
+    }
+    if(this->getPlayer()->getGame()->getTeam(0)->size() < 1 || this->getPlayer()->getGame()->getTeam(1)->size() < 1){
+        Message message = Message(MessageType::ERROR,"W obu druzynach musi byc przynajmniej jeden gracz!\n");
+        this->writem(message);
+        return;
+    }
+    getPlayer()->getGame()->start();
+}
 
 void Client::showPlayers(){
     if(this->getPlayer()==nullptr){
