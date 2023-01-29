@@ -44,6 +44,13 @@ bool Game::isFinished(){
 }
 
 void Game::start(){
+    start(10);
+}
+
+void Game::start(int roundTime){
+    if(roundTime >= 1){
+        roundDuration = roundTime * 1000; //zamiana z s na ms
+    }
     started = true;
     startTime = std::chrono::duration_cast< std::chrono::milliseconds >(std::chrono::system_clock::now().time_since_epoch()).count();
 

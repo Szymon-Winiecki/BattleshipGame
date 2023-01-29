@@ -1,4 +1,4 @@
-const { QLabel, FlexLayout, QWidget, QMainWindow, QLineEdit, QPushButton } = require("@nodegui/nodegui");
+const { QLabel, FlexLayout, QWidget, QMainWindow, QLineEdit, QPushButton, QKeyEvent } = require("@nodegui/nodegui");
 
 
 const GuiScreen = require("./guiScreen");
@@ -55,15 +55,6 @@ class lobbyScreen extends GuiScreen{
 
         const changeTeamButton = new QPushButton();
         changeTeamButton.setText("zmień druzyne");
-
-
-        /*if(isOwner){
-            const startButton = new QPushButton();
-            startButton.setText("rozpocznij");
-        }
-        else{
-            startButton.setText("gotowość");
-        }*/
         
 
         const exitButton = new QPushButton();
@@ -88,10 +79,40 @@ class lobbyScreen extends GuiScreen{
         lobbyViewLayout.addWidget(teamsRow);
         lobbyViewLayout.addWidget(changeTeamButton);
         if(isOwner){
+
+            const [roundTimeRow, roundTimeRowlayout] = guiLayout.Row();
+            const roundTimeLabel = new QLabel();
+            roundTimeLabel.setText('Czas trwania rundy [s]: ');
+            const roundTimeInput = new QLineEdit();
+            roundTimeInput.setText('10');
+
+            roundTimeInput.addEventListener('KeyPress', (nativeEvent) => {
+                const event = new QKeyEvent(nativeEvent);
+                const key = event.key();
+                if((key >= 48 && key <= 57) || key == 16777223 || key == 16777219){ //tylko cyfry od 0 do 9, backspace i delete
+                    event.accept();
+                }
+                else{
+                    event.ignore();
+                    roundTimeInput.setEventProcessed(true);
+                }
+              });
+
+            roundTimeRowlayout.addWidget(roundTimeLabel);
+            roundTimeRowlayout.addWidget(roundTimeInput);
+
+            lobbyViewLayout.addWidget(roundTimeRow);
+
             const startButton = new QPushButton();
             startButton.setText("rozpocznij");
             lobbyViewLayout.addWidget(startButton);
-            startButton.addEventListener('clicked', this.#onStartGameCallback);
+            startButton.addEventListener('clicked', () => {
+                let time = parseInt(roundTimeInput.text());
+                if(isNaN(time) || time <= 0){
+                    time = 10;
+                }
+                this.#onStartGameCallback(time);
+            });
         }
         
         lobbyViewLayout.addWidget(exitButton);

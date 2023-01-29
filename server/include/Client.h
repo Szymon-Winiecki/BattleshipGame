@@ -41,7 +41,7 @@ class Client{
         void leaveGame();
         void changeTeam();
         void getMap(int team);
-        void startGame();
+        void startGame(int roundTime);
 
         void setPlayer(Player* player);
         void showPlayers();

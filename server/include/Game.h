@@ -69,6 +69,8 @@ public:
 
     /*  rozpoczecie gry - rusza pierwsza runda*/
     void start();
+    /*  rozpoczecie gry - rusza pierwsza runda, roundTime to czas trwania rundy w sekundach*/
+    void start(int roundTime);
 
     /*  do zamkniętej gry nie można dołączać*/
     void close();

@@ -80,7 +80,7 @@ void Client::handleEvent(uint32_t events){
                     getPlayer()->sendMessage(m);
                 break;}
                 case STARTGAME:
-                    this->startGame();
+                    this->startGame(atoi(message.getParam1().c_str()));
                 break;
                 default:
                     events |= EPOLLERR;
@@ -236,7 +236,7 @@ void Client::getMap(int team){
     this->writem(message);
 }  
 
-void Client::startGame(){
+void Client::startGame(int roundTime){
     if(getPlayer() != getPlayer()->getGame()->getOwner()){
         Message message = Message(MessageType::ERROR,"Tylko wlasciciel moze rozpoczac gre\n");
         this->writem(message);
@@ -247,7 +247,7 @@ void Client::startGame(){
         this->writem(message);
         return;
     }
-    getPlayer()->getGame()->start();
+    getPlayer()->getGame()->start(roundTime);
 }
 
 void Client::showPlayers(){

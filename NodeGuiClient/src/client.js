@@ -47,7 +47,7 @@ class Client{
     }
 
     #showLobbyScreen(){
-        this.#lobbyScreen = this.#gui.showLobbyScreen(this.#game.gameId, this.#player.playerId, this.#player.isCreator,  () => { this.#exitGame(); }, () => { this.#changeTeam(); }, () => { if(this.#player.isCreator) {this.#startGame();} {} })
+        this.#lobbyScreen = this.#gui.showLobbyScreen(this.#game.gameId, this.#player.playerId, this.#player.isCreator,  () => { this.#exitGame(); }, () => { this.#changeTeam(); }, (roundTime) => { if(this.#player.isCreator) {this.#startGame(roundTime);} {} })
         this.#gameScreen = undefined;
 
         this.#lobbyScreen.serverStatusWidget.setStatus(true);
@@ -94,8 +94,8 @@ class Client{
         process.exit(0);
     }
 
-    #startGame(){
-        this.#connection.send(new Message(MessageType.STARTGAME));
+    #startGame(roundTime){
+        this.#connection.send(new Message(MessageType.STARTGAME, '', roundTime));
     }
 
     #enterGame(){
