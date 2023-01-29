@@ -110,7 +110,7 @@ class Client{
     }
 
     #changeTeam(){
-        this.#connection.send(new Message(MessageType.CHANGETEAM, '',  1 - this.#player.team));
+        this.#connection.send(new Message(MessageType.CHANGETEAM));
     }
 
     #onVote(x, y){
@@ -148,19 +148,10 @@ class Client{
              ID druzyny              (param2)
              ID gry                  (objecttype)
             */
-            case MessageType.CREATE: 
-      
-              console.log("Udalo sie stworzyc gre o id: "+message.getObjectId());
-              //dodanie informacji z serwera o graczu do klasy
-              this.#player.setGameId(message.getObjectId());
-              this.#player.setPlayerid(message.getParam1());
-              this.#player.setTeamId(parseInt(message.getParam2()));
-              this.#player.addPlayerToTeam(message.getParam2(),this.#player.getPlayerid());
+            case MessageType.CREATE:
 
               this.#player.isCreator = true;
               this.#onGameJoined(message.getObjectId(), message.getParam1(), parseInt(message.getParam2()));
-              this.#updatePlayersList(0, this.#player.getTeam(0));
-              this.#updatePlayersList(1, this.#player.getTeam(1));
             break;
 
             /*
@@ -171,16 +162,9 @@ class Client{
              ID gry                  (objecttype)
             */
             case MessageType.JOIN:
-      
-              console.log("dolaczono do gry "+message.getObjectId());
-              //dodanie informacji z serwera o graczu do klasy
-              this.#player.setGameId(message.getObjectId());
-              this.#player.setPlayerid(message.getParam1());
-              this.#player.setTeamId(parseInt(message.getParam2()));
 
               this.#player.isCreator = false;
               this.#onGameJoined(message.getObjectId(), message.getParam1(), parseInt(message.getParam2()));
-              
             break;
 
              /*
@@ -191,21 +175,14 @@ class Client{
              ID gry                  (objecttype)
              jedna wiadomosc typu SHOWTEAMS przesyla informacje na temat JEDNEJ druzyny
             */
-            case MessageType.SHOWTEAMS: //przesyla po kolei druzyne 0 i potem 1
+            case MessageType.SHOWTEAMS:
       
-             //umieszczamy id graczy w liscie, mozliwe ze da sie to prosciej
+             //umieszczamy id graczy w liscie
              var players = message.getParam2().split('&'); 
              players.pop(); //usuniecie ostatniego bo pusty przez split
             
-             this.#player.setTeam(parseInt(message.getParam1()), players);
-             //dodajemy tych graczy do player.teams
-             /*if(players.length>0){
-                for(let i=0;i<players.length;i++){
-                    this.#player.addPlayerToTeam(parseInt(message.getParam1()),players[i]);
-                }
-             }*/
-             this.#updatePlayersList(0, this.#player.getTeam(0));
-             this.#updatePlayersList(1, this.#player.getTeam(1));
+             const team = parseInt(message.getParam1());
+             this.#updatePlayersList(team, players);
             break;
 
              /*
@@ -216,52 +193,16 @@ class Client{
             case MessageType.LEAVE: 
               console.log(message.getParam1());
               this.#player.clear();
+              this.#game.clear();
               
             break;
 
             /*
-            MessageType.PLAYERLEFT - informuje o graczu ktory odszedl z naszej gry
-            Dostajemy informacje o:
-             ID gracza               (param1) 
-             ID druzyny w jakiej byl (param2)
-             ID gry                  (objecttype)
-            */
-            case MessageType.PLAYERLEFT:
-              console.log("Gracz "+message.getParam1()+" opuscil gre");
-              //usuniecie gracza z druzyny
-              this.#player.removePlayerFromTeam(parseInt(message.getParam2()),message.getParam1());
-              //update listy graczy w gui gry
-              this.#updatePlayersList(message.getParam2(), this.#player.getTeam(message.getParam2()));
-            break;
-
-            /*
-            MessageType.PLAYERJOINED - informuje o graczu ktory dolaczyl do naszej gry
-            Dostajemy informacje o:
-             ID gracza                     (param1)
-             ID druzyny do jakiej dolaczyl (param2)
-             ID gry                        (objecttype)
-            */
-            case MessageType.PLAYERJOINED: 
-              console.log("Gracz "+message.getParam1()+" dolaczyl do gry");
-              //dodanie gracza do druzyny
-              this.#player.addPlayerToTeam(parseInt(message.getParam2()),message.getParam1());
-              //update listy graczy w gui gry
-              this.#updatePlayersList(message.getParam2(), this.#player.getTeam(message.getParam2()));
-            break;
-
-             /*
             MessageType.CHANGETEAM - informuje o pmyślnej zmianie druzyny gracza (odpowiedź na CHANGETEAM klienta)
             Dostajemy informacje o:
              id druzyny                    (param1) 
             */
             case MessageType.CHANGETEAM: 
-                /*//usuniecie gracza z jednej druzyny
-                this.#player.removePlayerFromTeam(1-parseInt(message.getParam2()),message.getParam1());
-                //dodanie gracza do drugiej druzyny
-                this.#player.addPlayerToTeam(parseInt(message.getParam2()),message.getParam1());
-                //update list graczy w gui gry
-                this.#updatePlayersList(message.getParam2(), this.#player.getTeam(message.getParam2()));
-                this.#updatePlayersList(1-message.getParam2(), this.#player.getTeam(1-message.getParam2()));*/
                 this.#onTeamChanged(parseInt(message.getParam1()));
             break;
 
@@ -294,7 +235,6 @@ class Client{
              mapa                                (param1)
             */
             case MessageType.GETMAP:
-                console.log(message.encode());
                 this.#updateBoard(parseInt(message.getObjectId()), message.getParam1());
             break;
 
@@ -306,21 +246,24 @@ class Client{
              nowy status                         (param2)
             */
             case MessageType.UPDATEMAP:
-                console.log(message.encode());
                 this.#updateField(parseInt(message.getObjectId()), message.getParam1(), parseInt(message.getParam2()));
             break;
+
             /*wiadomosc z serwera ze zostal zamkniety */
             case MessageType.SERVERERROR:
                 this.#player.clear();
-               this.#showConnectScreen();
+                this.#game.clear();
+                this.#showConnectScreen();
 
             break;
+
             /*zostajesz wlascicielem gry */
             case MessageType.BEOWNER:
                 this.#player.isCreator = true;
                 this.#showLobbyScreen();
       
             break;
+
             /*wiadomos z serwera ze gra sie rozpoczyna */
             case MessageType.STARTGAME:
                 this.#enterGame();
@@ -334,6 +277,7 @@ class Client{
             case MessageType.GAMEOVER:
                 this.#onGameOver(parseInt(message.getObjectId()));
             break;
+
             default:
               console.log("incorrect message, albo jeszcze nie ustawiona\n");
             break;
@@ -412,15 +356,23 @@ class Client{
     #updatePlayersList(team, list){
         this.#game.teams[team] = list;
 
-        let screen = this.#lobbyScreen;
-        if(this.#gameScreen != undefined) screen = this.#gameScreen;
-        
-        if(team == this.#player.team){
-            screen.playerTeamList.setList(list);
+        if(this.#gameScreen != undefined){
+            if(team == this.#player.team){
+                this.#gameScreen.playerTeamList.setList(list);
+            }
+            else{
+                this.#gameScreen.opponentTeamList.setList(list);
+            }
         }
         else{
-            screen.opponentTeamList.setList(list);
+            if(team == 0){
+                this.#lobbyScreen.playerTeamList.setList(list);
+            }
+            else{
+                this.#lobbyScreen.opponentTeamList.setList(list);
+            }
         }
+        
     }
 
     #updateBoard(team, serializedBoard){

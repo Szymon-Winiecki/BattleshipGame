@@ -183,19 +183,15 @@ void Game::leave(int team, Player* player){
     teams[team].remove(*player);
 
     sendCurrentTeams();
-    /*Message message1 = Message(PLAYERLEFT,player->getGame()->getId(),player->getId(),std::to_string(player->getTeamId()));
-    sendToAllPlayers(message1); */
 }
 
 void Game::changeTeam(int team, Player* player){
-    this->leave(1-team, player);
-    player->setTeamId(team);
+    teams[1-team].remove(*player);
     teams[team].push_front(*player);
 
-    sendCurrentTeams();
-    /*Message message1 = Message(CHANGETEAM,player->getGame()->getId(),player->getId(),std::to_string(player->getTeamId()));
-    sendToAllPlayers(message1);      */          
+    player->setTeamId(team);
 
+    sendCurrentTeams();       
 }
 
 std::string Game::getId(){
@@ -218,7 +214,7 @@ void Game::assertTeam(int team){
 }
 
 bool Game::vote(Vote &vote){
-    if(activeVoting == NULL) return false;
+    if(activeVoting == nullptr) return false;
     return activeVoting->vote(vote);
 }
 
