@@ -108,7 +108,7 @@ class lobbyScreen extends GuiScreen{
             lobbyViewLayout.addWidget(startButton);
             startButton.addEventListener('clicked', () => {
                 let time = parseInt(roundTimeInput.text());
-                if(isNaN(time) || time <= 0){
+                if(isNaN(time) || time <= 0 || time > 999){
                     time = 10;
                 }
                 this.#onStartGameCallback(time);
