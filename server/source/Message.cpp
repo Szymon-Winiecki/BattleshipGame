@@ -47,8 +47,6 @@ std::string Message::encode(char separator){
     std::stringstream encoded;
     //dodajemy nawiasy przy zakodowaniu, bo latwiej, do odkodowania nie trzeba bo latwiej usunac przy odczytywaniu bufora
     encoded << this->type << separator << this->objectId << separator << this->param1 << separator << this->param2 << '}';
-    
-    //encoded << this->type << separator << this->objectId << separator << this->param1 << separator << this->param2; //stare
     return encoded.str();
 }
 

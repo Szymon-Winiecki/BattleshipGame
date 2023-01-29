@@ -1,4 +1,4 @@
-const { QLabel, FlexLayout, QWidget, QMainWindow, QLineEdit, QPushButton } = require("@nodegui/nodegui");
+const { QLabel, FlexLayout, QWidget, QPushButton } = require("@nodegui/nodegui");
 
 const GuiScreen = require("./guiScreen");
 const guiLayout = require("./guiLayout");
@@ -6,7 +6,6 @@ const ServerStatusWidget = require("./serverStatusWidget");
 const RoundTimerWidget = require("./roundTimerWidget");
 const BoardWidget = require("./boardWidget");
 const PlayersListWidget = require("./playersListWidget");
-const { timingSafeEqual } = require("crypto");
 
 class GameScreen extends GuiScreen{
     #rootView;

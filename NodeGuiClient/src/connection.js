@@ -1,8 +1,5 @@
 var net = require('net');
 var Message = require('./message').Message;
-var MessageType = require('./message').MessageType;
-
-
 
 class Connection{
   #socket;

@@ -97,9 +97,8 @@ FieldStatus Map::shoot(int x, int y){
     return next;
 }
 
-void Map::placeShip(int size){
-
-    /*if(!validCoords(x, y)) return false;
+bool Map::placeShip(int x, int y, int size, bool horizontal){
+    if(!validCoords(x, y)) return false;
 
     if(horizontal){
         if(!validCoords(x + size, y)) return false;
@@ -116,8 +115,10 @@ void Map::placeShip(int size){
         }
     }
     
-    return true;*/
+    return true;
+}
 
+void Map::placeShip(int size){
     bool horizontal = rand() % 2;
     int row = rand() % this->getSize();
     int col = rand() % this->getSize();
@@ -192,30 +193,6 @@ bool Map::validCoords(int x, int y){
     }
     return true;
 }
-
-/*bool Map::XvalidCoords(int row, int col, int size, bool isHorizontal){  ///inne validCoords ktore nie ma sprawdzania czy statki stoja obok siebie -- do usuniecia
-    if (isHorizontal) {
-    if (col + size > this->getSize()) {
-      return false;
-    }
-    for (int i = col; i < col + size; i++) {
-      if (map[row][i] != FieldStatus::CLEAR) {
-        return false;
-      }
-    }
-  } else {
-    if (row + size > this->getSize()) {
-      return false;
-    }
-    for (int i = row; i < row + size; i++) {
-      if (map[i][col] != FieldStatus::CLEAR) {
-        return false;
-      }
-    }
-  }
-  return true;
-
-}*/
 
 bool Map::validCoords1(int row, int col, int size, bool horizontal) {
   if (horizontal) {

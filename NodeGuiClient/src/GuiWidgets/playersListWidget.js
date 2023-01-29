@@ -1,6 +1,5 @@
-const { QLabel, FlexLayout, QWidget, QMainWindow, QLineEdit, QPushButton } = require("@nodegui/nodegui");
+const { QLabel, FlexLayout, QWidget } = require("@nodegui/nodegui");
 const GuiWidget = require("./guiWidget");
-const Board = require("../board");
 
 
 class PlayersListWidget extends GuiWidget{
@@ -56,7 +55,6 @@ class PlayersListWidget extends GuiWidget{
     for(let i = 0; i < this.#players.length; ++i){
       this.#playersLabels[i] = new QLabel();
       this.#playersLabels[i].setText(`${i + 1}.  ${this.#players[i]}`);
-      //this.#playersLabels[i].setInlineStyle(`background-color:'white'; width: '100%'`);
       this.#playersListViewLayout.addWidget(this.#playersLabels[i]);
     }
 

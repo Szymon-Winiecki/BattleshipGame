@@ -208,7 +208,7 @@ class Client{
             break;
 
             /*
-            MessageType.VOTERESULT - informuje o zakończeniu głosowania i przekazuje jego wynik (tylko do celów testowych)
+            MessageType.VOTERESULT - informuje o zakończeniu głosowania i przekazuje jego wynik
             Dostajemy informacje o:
              ID głosowania                (objectId) 
              ID drużyny która głosowała   (param1)
@@ -314,8 +314,6 @@ class Client{
     }
 
     #onVotingResult(votingId, result){
-        console.log("voting results: " + result);
-
         if(votingId != this.#game.currentVotingId){ //klient 'przegapił' jakąś rundę (nie otrzymał informacji o zmianie mapy)
             this.#connection.send(new Message(MessageType.GETMAP, '', '0', ''));
             this.#connection.send(new Message(MessageType.GETMAP, '', '1', ''));

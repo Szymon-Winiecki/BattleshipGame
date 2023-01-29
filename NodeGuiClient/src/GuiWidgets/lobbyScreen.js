@@ -1,4 +1,4 @@
-const { QLabel, FlexLayout, QWidget, QMainWindow, QLineEdit, QPushButton, QKeyEvent } = require("@nodegui/nodegui");
+const { QLabel, FlexLayout, QWidget, QLineEdit, QPushButton, QKeyEvent } = require("@nodegui/nodegui");
 
 
 const GuiScreen = require("./guiScreen");

@@ -36,8 +36,10 @@ public:
 
     /*  stawia statek na planszy, jezeli argument horizontal == true, to statek ustawiony jest poziomo, zaczynajac od pola [x,y] w prawo,
         natomiast jezeli horizontal == false, to statek ustawiony jest pionowo od pola [x,y] w dół. size okresla dlugosc statku.
-        -------->Jezeli statek nie miesci sie na planszy, zwracana jest wartosc false, w przeciwnym wypadku true--chyba nie sprawdzamy tego i tak?chyba ze dodamy------*/
-    //void placeShip(int x, int y, int size, bool horizontal);
+        Jezeli statek nie miesci sie na planszy, zwracana jest wartosc false, w przeciwnym wypadku true*/
+    bool placeShip(int x, int y, int size, bool horizontal);
+
+    /*  stawia statek od dlugosci size w losowym poprawnym miejscu*/
     void placeShip(int size);
 
     bool allShipsSunk();

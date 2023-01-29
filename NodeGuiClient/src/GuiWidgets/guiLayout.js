@@ -1,4 +1,4 @@
-const { QLabel, FlexLayout, QWidget, QMainWindow, QLineEdit, QPushButton } = require("@nodegui/nodegui");
+const { FlexLayout, QWidget } = require("@nodegui/nodegui");
 
 function Row(id = "row"){
     const row = new QWidget();

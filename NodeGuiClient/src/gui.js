@@ -1,16 +1,10 @@
-const { QLabel, FlexLayout, QWidget, QMainWindow, QLineEdit, QPushButton } = require("@nodegui/nodegui");
+const {QMainWindow} = require("@nodegui/nodegui");
 
-const GuiBoard = require("./GuiWidgets/boardWidget");
-const GuiRoundTimer = require("./GuiWidgets/roundTimerWidget");
 const ConnectionScreen = require("./GuiWidgets/connectionScreen");
 const MenuScreen = require("./GuiWidgets/menuScreen");
 
-const Board = require("./board");
-const connection = require("./connection");
 const GameScreen = require("./GuiWidgets/gameScreen");
 const lobbyScreen = require("./GuiWidgets/lobbyScreen");
-const Message = require("./message").Message;
-const MessageType = require("./message").MessageType;
 
 
 class Gui{
