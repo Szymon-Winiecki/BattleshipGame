@@ -92,6 +92,10 @@ class BoardWidget extends GuiWidget{
     #boardView > QPushButton.sunk{
       background-color: black;
     }
+    #boardView > QPushButton.selected{
+      background-color: blue;
+      border: 1px solid black;
+    }
     ${this.#interactive ? '#boardView > QPushButton.clear:hover{ border: 1px solid black; }' : ' '}
     ${this.#interactive ? '#boardView > QPushButton.clear:focus{ border: 1px solid black; }' : ' '}
   `);
@@ -134,6 +138,7 @@ class BoardWidget extends GuiWidget{
         this.#boardViewLayout.addWidget(this.#fieldsWidgets[j][i]);
         this.#fieldsWidgets[j][i].addEventListener("clicked", () => {
           if(this.#interactive && this.#fieldsWidgets[j][i].property('class') == 'clear'){ //można zagłosować tylko na pola typu 'clear' na planszy przeciwnika, więc tylko te będą uruchamiały event
+            this.#fieldsWidgets[j][i].setProperty("class", "selected");
             this.#onClick(j, i);
           }
         });

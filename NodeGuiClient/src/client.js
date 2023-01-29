@@ -115,6 +115,7 @@ class Client{
 
     #onVote(x, y){
         this.#connection.send(new Message(MessageType.VOTE, this.#game.currentVotingId, `${x}&${y}`, ''));
+        this.#gameScreen.opponentBoardWidget.setInteractive(false);
     }
 
     #exitGame(){
@@ -345,6 +346,7 @@ class Client{
     }
 
     #onGameOver(winner){
+        this.#gameScreen.opponentBoardWidget.setInteractive(false);
         if(winner == this.#player.team){
             this.#gameScreen.roundTimerWidget.setRound(RoundTimerWidget.RoundType.WIN);
         }
