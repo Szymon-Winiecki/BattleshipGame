@@ -250,3 +250,27 @@ bool Map::validCoords1(int row, int col, int size, bool horizontal) {
   }
   return true;
 }
+
+std::vector<int> Map::getAnyShootableField(){
+    int srx = rand() % getSize();
+    int sry = rand() % getSize();
+
+    for(int y = sry; y < getSize(); ++y){
+        for(int x = srx; x < getSize(); ++x){
+            if(map[x][y] == FieldStatus::CLEAR || map[x][y] == FieldStatus::SHIP){
+                return {x, y};
+            }
+        }
+        srx = 0;
+    }
+
+    for(int y = 0; y <= sry; ++y){
+        for(int x = 0; x < getSize(); ++x){
+            if(map[x][y] == FieldStatus::CLEAR || map[x][y] == FieldStatus::SHIP){
+                return {x, y};
+            }
+        }
+    }
+
+    return {0, 0};
+}

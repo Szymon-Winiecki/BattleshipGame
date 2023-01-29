@@ -42,6 +42,8 @@ public:
 
     bool allShipsSunk();
 
+    std::vector<int> getAnyShootableField();
+
     /*  zwraca mape w zapisana w postacji size|00011020... gdzie size to rozmiar mapy(szerokosc), | to separator (delimeter),
         a kolejne znaki to pola planszy (najpierw cały pierwszy rząd, potem drugi itd), pola nie są separowane, bo kazde zajmuje dokladenie jeden znak */
     std::string serialize(bool noShips, char delimeter);

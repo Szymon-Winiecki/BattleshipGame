@@ -93,8 +93,13 @@ void Game::nextRound(){
     }
     if(activeVoting != nullptr){
         std::string result = activeVoting->getResult();
-        sendResult(result);
-        std::vector<int> fieldToShot = activeVoting->getDecodedResult();
+        std::vector<int> fieldToShot = {0, 0};
+        if(result == ""){
+            fieldToShot = maps[1 - currentTeam].getAnyShootableField(); //jeżelu nikt nie zagłosował losujemy pole
+        }
+        else{
+            fieldToShot = activeVoting->getDecodedResult();
+        }
         shoot(1 - currentTeam, fieldToShot[0], fieldToShot[1]);
     }
     delete activeVoting;
