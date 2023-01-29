@@ -92,11 +92,12 @@ void Game::nextRound(){
 
     if(toDelete) return;
 
+    if(maps[1 - currentTeam].allShipsSunk()){   //koniec gry
+        endGame(currentTeam);
+    }	
+
     if(!finished){
-        if(maps[1 - currentTeam].allShipsSunk()){   //koniec gry
-            endGame(currentTeam);
-        }
-         currentTeam = 1 - currentTeam;
+        currentTeam = 1 - currentTeam;
         activeVoting = new ShotVoting(getId(), getTeam(currentTeam), roundDuration, &maps[1 - currentTeam]);
         sendNextRoundInfo();
     }
